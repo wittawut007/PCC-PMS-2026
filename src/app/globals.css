@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+/* ── PCC PMS Design System ── */
+/* Based on SVG-33 Design System screen */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Colors */
+  --color-primary: #1E3A5F;        /* Navy Blue — Sidebar, Headers */
+  --color-primary-light: #2D5A8E;  /* Lighter Navy */
+  --color-accent: #F59E0B;         /* Amber — Highlights, CTA */
+  --color-accent-dark: #D97706;
+
+  /* Status Colors */
+  --color-success: #16A34A;        /* Green — Passed, Active */
+  --color-warning: #D97706;        /* Orange — In Progress, Warning */
+  --color-danger: #DC2626;         /* Red — Failed, Critical, NCR */
+  --color-info: #2563EB;           /* Blue — Info, Info badges */
+  --color-neutral: #6B7280;        /* Gray — Pending, Disabled */
+
+  /* Work Type Colors */
+  --color-fence: #7C3AED;          /* Purple — F งานเสารั้ว */
+  --color-retaining: #0891B2;      /* Cyan — RW กำแพงกันดิน */
+  --color-retaining-fence: #059669; /* Teal — RWF */
+  --color-pt: #EA580C;             /* Orange — PT โพสเทนชั่น */
+
+  /* Surfaces */
+  --color-sidebar: #1E3A5F;
+  --color-sidebar-text: #E2E8F0;
+  --color-sidebar-active: #2D5A8E;
+  --color-topbar: #FFFFFF;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Tailwind CSS v4 theme extension */
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-accent: var(--color-accent);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+  --color-info: var(--color-info);
+  --color-sidebar: var(--color-sidebar);
+  --font-thai: var(--font-thai), var(--font-latin), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base */
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-thai), var(--font-latin), system-ui, sans-serif;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Work type badge colors */
+.badge-F    { background: #EDE9FE; color: #7C3AED; }
+.badge-RW   { background: #E0F2FE; color: #0891B2; }
+.badge-RWF  { background: #D1FAE5; color: #059669; }
+.badge-PT   { background: #FEF3C7; color: #EA580C; }
+
+/* Status badge colors */
+.status-draft       { background: #F1F5F9; color: #64748B; }
+.status-active      { background: #DCFCE7; color: #16A34A; }
+.status-on-hold     { background: #FEF3C7; color: #D97706; }
+.status-completed   { background: #DBEAFE; color: #2563EB; }
+.status-closed      { background: #F1F5F9; color: #374151; }
