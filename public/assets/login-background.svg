@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1440" height="900" viewBox="0 0 1440 900"><title>00 · เข้าสู่ระบบ</title><desc>Desktop UX/UI PCC PMS. Sample data. Editable SVG elements and live text. No MCP.</desc>
+<rect x="0" y="0" width="1440" height="900" rx="0" fill="#F6F8FC"/>
+<defs>
+      <linearGradient id="loginBg" x1="0" y1="0" x2="1440" y2="900" gradientUnits="userSpaceOnUse"><stop stop-color="#F1F6FF"/><stop offset=".53" stop-color="#FCFDFF"/><stop offset="1" stop-color="#EAF9F4"/></linearGradient>
+      <linearGradient id="loginButton" x1="492" y1="0" x2="948" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#0867E8"/><stop offset="1" stop-color="#12A77C"/></linearGradient>
+      <linearGradient id="loginLogo" x1="674" y1="94" x2="766" y2="177" gradientUnits="userSpaceOnUse"><stop stop-color="#2457C8"/><stop offset="1" stop-color="#075DD8"/></linearGradient>
+      <filter id="loginShadow" x="-30%" y="-20%" width="160%" height="170%"><feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#18345D" flood-opacity=".14"/></filter>
+      <filter id="logoShadow" x="-40%" y="-40%" width="180%" height="200%"><feDropShadow dx="0" dy="8" stdDeviation="11" flood-color="#1B57C8" flood-opacity=".30"/></filter>
+      <pattern id="loginDots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.35" fill="#79A3DD" fill-opacity=".30"/></pattern>
+    </defs>
+    <rect width="1440" height="900" fill="url(#loginBg)"/>
+    <circle cx="0" cy="0" r="230" fill="#DFECFF"/><circle cx="48" cy="8" r="162" fill="#D3E4FD"/>
+    <circle cx="225" cy="902" r="230" fill="#EAF2FF"/><circle cx="1442" cy="851" r="248" fill="#DDF7EE"/><circle cx="1438" cy="905" r="147" fill="#D4F2E8"/>
+    <rect x="160" y="126" width="90" height="90" fill="url(#loginDots)"/><rect x="1260" y="705" width="90" height="90" fill="url(#loginDots)"/>
+    <g fill="none" stroke="#8EADD1" stroke-width="3" opacity=".12" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M40 712h342V510H40ZM96 712V546h232v166M40 580h342M40 650h342M61 488h282v22M80 454h244v34M101 454l40 34 40-34 40 34 40-34 40 34"/>
+      <path d="M1024 740h362V373h-362ZM1064 740V373M1144 740V373M1224 740V373M1304 740V373M1024 454h376M1024 536h376M1024 618h376M1194 373V196M1182 196h24M1187 216h14M1194 196l188 76M1194 196h196M1229 210l-36 27M1267 226l-32 25M1306 242l-34 28M1368 266v54M1358 320h20"/>
+    </g>
+    <line x1="1300" y1="146" x2="1328" y2="146" stroke="#7FA1D0" stroke-width="1.5"/>
+
+
+
+
+
+
+</svg>
