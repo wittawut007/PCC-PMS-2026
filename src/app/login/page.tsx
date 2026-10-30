@@ -124,13 +124,13 @@ function LoginForm() {
 
         {/* Center Login Card matching SVG Login_card 576x792 */}
         <section className="login-card" aria-labelledby="login-title">
-          {/* Logo matching login-logo.svg */}
+          {/* Logo matching main page and other pages (/assets/logo.svg) */}
           <img
             className="login-logo"
-            src="/assets/login-logo.svg"
+            src="/assets/logo.svg"
             alt="PCC"
-            width={92}
-            height={83}
+            width={80}
+            height={72}
           />
 
           {/* Brand & Subbrand */}

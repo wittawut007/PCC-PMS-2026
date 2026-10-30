@@ -28,9 +28,9 @@
 .login-logo {
   position: absolute;
   top: 40px;
-  left: 242px;
-  width: 92px;
-  height: 83px;
+  left: calc(50% - 40px);
+  width: 80px;
+  height: 72px;
   object-fit: contain;
   filter: none;
 }
@@ -431,8 +431,10 @@
     border-radius: 24px;
   }
   .login-logo {
-    left: calc(50% - 46px);
-    top: 30px;
+    left: calc(50% - 35px);
+    top: 32px;
+    width: 70px;
+    height: 64px;
   }
   .login-brand {
     top: 112px;
