@@ -4,23 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
+  Home,
   FolderKanban,
-  ClipboardList,
+  PlusCircle,
   Package,
+  Factory,
   Truck,
-  CheckSquare,
+  ShieldCheck,
+  Calendar,
+  Wallet,
   BarChart3,
+  Users,
   Settings,
   LogOut,
+  HelpCircle,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const navItems = [
   {
-    label: "ภาพรวมงานวันนี้",
+    label: "หน้าหลัก",
     href: "/dashboard",
-    icon: LayoutDashboard,
+    icon: Home,
   },
   {
     label: "โครงการทั้งหมด",
@@ -28,35 +33,52 @@ const navItems = [
     icon: FolderKanban,
   },
   {
-    label: "แผนงาน",
-    href: "/planning",
-    icon: ClipboardList,
+    label: "สร้างโครงการ",
+    href: "/projects/new",
+    icon: PlusCircle,
   },
   {
-    label: "วัสดุและคลัง",
+    label: "วัสดุและเอกสารคลัง",
     href: "/materials",
     icon: Package,
   },
   {
-    label: "ขนส่ง",
+    label: "ติดตามการผลิต",
+    href: "/production",
+    icon: Factory,
+  },
+  {
+    label: "ขนส่งและตรวจรับ",
     href: "/transport",
     icon: Truck,
   },
   {
-    label: "QC และ NCR",
-    href: "/qc",
-    icon: CheckSquare,
+    label: "ติดตั้งและ QC",
+    href: "/installation",
+    icon: ShieldCheck,
   },
   {
-    label: "รายงาน",
+    label: "แผนงาน",
+    href: "/planning",
+    icon: Calendar,
+  },
+  {
+    label: "งบประมาณ / ต้นทุน",
+    href: "/costs",
+    icon: Wallet,
+  },
+  {
+    label: "รายงานสรุป",
     href: "/reports",
     icon: BarChart3,
   },
-];
-
-const bottomItems = [
   {
-    label: "ตั้งค่าระบบ",
+    label: "พอร์ทัลเจ้าของ",
+    href: "/owner",
+    icon: Users,
+  },
+  {
+    label: "ตั้งค่า",
     href: "/settings",
     icon: Settings,
   },
@@ -75,24 +97,45 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 bg-[#1E3A5F] flex flex-col h-full flex-shrink-0">
-      {/* Brand */}
-      <div className="px-5 py-5 border-b border-blue-800/50">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#F59E0B] rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-sm font-bold">P</span>
+    <aside className="w-[240px] bg-white border-r border-[#E4EAF4] flex flex-col h-full flex-shrink-0 z-30 select-none">
+      {/* Brand Header — Exact SVG 01 / 02 Style */}
+      <div className="px-5 py-4 border-b border-[#E4EAF4]">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+            <svg
+              viewBox="20 10 50 55"
+              className="w-9 h-9"
+              fill="none"
+              stroke="#1673FF"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M29 47V32l22-14" />
+              <path d="M40 55V38l17-11" />
+              <path d="M51 58V46l11-7" />
+            </svg>
           </div>
           <div>
-            <div className="text-white font-bold text-sm leading-tight">
-              PCC PMS
+            <div className="text-[#0D255B] font-extrabold text-2xl tracking-tight leading-none">
+              PCC
             </div>
-            <div className="text-blue-300 text-xs">2026</div>
+            <div className="text-[#0D255B] font-semibold text-[8.5px] tracking-wider mt-0.5 leading-none">
+              PROJECT MANAGEMENT
+            </div>
           </div>
-        </div>
+        </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      {/* Nav Section Label */}
+      <div className="px-4 pt-3 pb-1">
+        <span className="text-[10px] font-bold text-[#596780] tracking-wider uppercase">
+          WORKSPACE
+        </span>
+      </div>
+
+      {/* Navigation Links */}
+      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -104,57 +147,66 @@ export function Sidebar({ user }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors",
                 isActive
-                  ? "bg-[#2D5A8E] text-white font-medium"
-                  : "text-blue-200 hover:bg-blue-800/40 hover:text-white"
+                  ? "bg-[#EAF3FF] text-[#075DD8] font-semibold shadow-xs"
+                  : "text-[#263B60] hover:bg-[#F5F8FD] hover:text-[#0D255B]"
               )}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className="leading-none">{item.label}</span>
+              <Icon
+                className={cn(
+                  "w-[18px] h-[18px] flex-shrink-0 transition-colors",
+                  isActive ? "text-[#075DD8]" : "text-[#7086A8]"
+                )}
+                strokeWidth={isActive ? 2 : 1.75}
+              />
+              <span className="truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom */}
-      <div className="px-3 pb-3 pt-2 border-t border-blue-800/50 space-y-0.5">
-        {bottomItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-200 hover:bg-blue-800/40 hover:text-white transition-colors"
-            >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className="leading-none">{item.label}</span>
-            </Link>
-          );
-        })}
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-200 hover:bg-red-900/40 hover:text-red-300 transition-colors"
-        >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          <span className="leading-none">ออกจากระบบ</span>
-        </button>
-
-        {/* User info */}
-        <div className="mt-2 px-3 py-2.5 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-[#F59E0B] flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">
-              {user.name?.[0]?.toUpperCase() ?? "U"}
+      {/* Bottom Area */}
+      <div className="p-3 border-t border-[#E4EAF4] space-y-2">
+        {/* Support Box (SVG: ศูนย์ช่วยเหลือ) */}
+        <div className="bg-[#F3F7FC] rounded-xl p-3 border border-[#E9EFF7]">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-4 h-4 text-[#075DD8]" />
+            <span className="text-xs font-semibold text-[#0D255B]">
+              ศูนย์ช่วยเหลือ
             </span>
           </div>
-          <div className="min-w-0">
-            <div className="text-white text-xs font-medium truncate">
-              {user.name}
+          <p className="text-[11px] text-[#596780] mt-1 leading-normal">
+            คู่มือและการติดต่อทีมงาน
+          </p>
+        </div>
+
+        {/* User Card & Logout */}
+        <div className="flex items-center justify-between px-2 pt-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-[#EAF3FF] text-[#075DD8] font-bold text-xs flex items-center justify-center flex-shrink-0">
+              {user.role === "PM"
+                ? "PM"
+                : user.role === "SYSTEM_ADMIN"
+                ? "AD"
+                : user.name?.[0]?.toUpperCase() ?? "U"}
             </div>
-            <div className="text-blue-400 text-[11px] truncate">
-              {user.email}
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-[#0D255B] truncate">
+                {user.name}
+              </div>
+              <div className="text-[10px] text-[#596780] truncate">
+                {user.role}
+              </div>
             </div>
           </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            title="ออกจากระบบ"
+            className="p-1.5 text-[#7086A8] hover:text-[#B72839] hover:bg-[#FFF0F1] rounded-lg transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>
