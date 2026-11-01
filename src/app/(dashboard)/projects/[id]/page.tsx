@@ -21,16 +21,21 @@ import {
   Wallet,
 } from "lucide-react";
 import { formatThaiDate, formatBaht, workTypeLabel, projectStatusLabel } from "@/lib/utils";
+import { getProjectBomData } from "@/app/actions/materials";
+import { BomTable } from "@/components/materials/BomTable";
 
 interface ProjectDetailPageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ tab?: string }>;
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({ params, searchParams }: ProjectDetailPageProps) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
   const { id } = await params;
+  const search = searchParams ? await searchParams : undefined;
+  const currentTab = search?.tab || "overview";
 
   // Query project from DB
   const project = await prisma.project.findFirst({
@@ -73,17 +78,21 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const whMember = project.members.find((m) => m.roleInProject === "WAREHOUSE")?.user?.name || "คลังสินค้า";
   const costMember = "ผู้ควบคุมต้นทุน";
 
-  // Sub navigation tabs matching views.js
+  // BOM Data query when tab is bom
+  const bomData = currentTab === "bom" ? await getProjectBomData(project.id) : null;
+
+  // Sub navigation tabs matching views.js & SVG 05 / 09
   const projectTabs = [
-    { id: "overview", label: "ภาพรวม", href: `/projects/${project.id}`, active: true },
+    { id: "overview", label: "ภาพรวม", href: `/projects/${project.id}`, active: currentTab === "overview" },
     { id: "planning", label: "แผนงาน", href: `/planning?projectId=${project.id}`, active: false },
     { id: "calendar", label: "ปฏิทิน", href: `/planning?projectId=${project.id}&view=calendar`, active: false },
-    { id: "materials", label: "วัสดุและคลัง", href: `/materials?project=${project.id}`, active: false },
-    { id: "transport", label: "การขนส่ง & ตรวจรับ", href: `/transport?project=${project.id}`, active: false },
-    { id: "installation", label: "การติดตั้ง & QC", href: `/installation?project=${project.id}`, active: false },
-    { id: "costs", label: "งบประมาณ ต้นทุน", href: `/costs?project=${project.id}`, active: false },
-    { id: "documents", label: "เอกสาร", href: `/documents?project=${project.id}`, active: false },
-    { id: "reports", label: "รายงานสรุป", href: `/reports?project=${project.id}`, active: false },
+    { id: "bom", label: "แบบ / BOM", href: `/projects/${project.id}?tab=bom`, active: currentTab === "bom" },
+    { id: "materials", label: "วัสดุและคลัง", href: `/materials?projectId=${project.id}`, active: false },
+    { id: "transport", label: "การขนส่ง & ตรวจรับ", href: `/transport?projectId=${project.id}`, active: false },
+    { id: "installation", label: "การติดตั้ง & QC", href: `/installation?projectId=${project.id}`, active: false },
+    { id: "costs", label: "งบประมาณ ต้นทุน", href: `/costs?projectId=${project.id}`, active: false },
+    { id: "documents", label: "เอกสาร", href: `/documents?projectId=${project.id}`, active: false },
+    { id: "reports", label: "รายงานสรุป", href: `/reports?projectId=${project.id}`, active: false },
   ];
 
   return (
@@ -131,7 +140,16 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
         ))}
       </div>
 
-      {/* 4 Top KPI Summary Cards matching SVG 05 */}
+      {currentTab === "bom" ? (
+        <BomTable
+          projectId={project.id}
+          projectCode={project.code}
+          projectName={project.name}
+          drawing={bomData?.drawing || null}
+        />
+      ) : (
+        <>
+          {/* 4 Top KPI Summary Cards matching SVG 05 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1 */}
         <div className="bg-white rounded-xl p-5 border border-[#E4EAF4] shadow-xs">
@@ -514,6 +532,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </Link>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

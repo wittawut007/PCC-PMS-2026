@@ -85,8 +85,10 @@ model Project {
   contracts        Contract[]
   dailyLogs        DailyLog[]
   evidenceFiles    EvidenceFile[]
+  drawings         Drawing[]
   materialRequests MaterialRequest[]
   members          ProjectMember[]
+  productionOrders ProductionOrder[]
   publications     Publication[]
   tasks            Task[]
   workPackages     WorkPackage[]
@@ -121,6 +123,7 @@ model WorkPackage {
   notes            String?
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
+  drawings         Drawing[]
   materialRequests MaterialRequest[]
   tasks            Task[]
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -233,20 +236,34 @@ model EvidenceFile {
 }
 
 model MaterialRequest {
-  id          String                @id @default(cuid())
-  projectId   String                @map("project_id")
-  packageId   String                @map("package_id")
-  requestNo   String                @unique @map("request_no")
-  status      RecordStatus          @default(DRAFT)
-  drawingRev  String?               @map("drawing_rev")
-  neededBy    DateTime?             @map("needed_by")
-  notes       String?
-  createdAt   DateTime              @default(now()) @map("created_at")
-  updatedAt   DateTime              @updatedAt @map("updated_at")
-  items       MaterialRequestItem[]
-  workPackage WorkPackage           @relation(fields: [packageId], references: [id])
-  project     Project               @relation(fields: [projectId], references: [id])
-  trips       TransportTrip[]
+  id               String                @id @default(cuid())
+  projectId        String                @map("project_id")
+  packageId        String                @map("package_id")
+  drawingId        String?               @map("drawing_id")
+  requestNo        String                @unique @map("request_no")
+  status           RecordStatus          @default(DRAFT)
+  drawingRev       String?               @map("drawing_rev")
+  neededBy         DateTime?             @map("needed_by")
+  notes            String?
+
+  // ข้อมูลตอบกลับจากคลัง (Warehouse Response)
+  externalRef      String?               @map("external_ref")
+  warehouseName    String?               @map("warehouse_name")
+  storageLocation  String?               @map("storage_location")
+  confirmedBy      String?               @map("confirmed_by")
+  confirmedAt      DateTime?             @map("confirmed_at")
+  responseFileUrl  String?               @map("response_file_url")
+  warehouseNotes   String?               @map("warehouse_notes")
+
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+
+  items            MaterialRequestItem[]
+  workPackage      WorkPackage           @relation(fields: [packageId], references: [id])
+  project          Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  drawing          Drawing?              @relation(fields: [drawingId], references: [id])
+  productionOrders ProductionOrder[]
+  trips            TransportTrip[]
 
   @@map("material_requests")
 }
@@ -254,13 +271,18 @@ model MaterialRequest {
 model MaterialRequestItem {
   id          String          @id @default(cuid())
   requestId   String          @map("request_id")
+  bomItemId   String?         @map("bom_item_id")
   itemCode    String          @map("item_code")
   description String
   quantity    Decimal         @db.Decimal(14, 3)
   unit        String
+  allocated   Decimal         @default(0) @db.Decimal(14, 3)
   confirmed   Decimal?        @db.Decimal(14, 3)
   shortage    Decimal?        @db.Decimal(14, 3)
+  notes       String?
+
   request     MaterialRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  bomItem     BomItem?        @relation(fields: [bomItemId], references: [id])
 
   @@map("material_request_items")
 }
@@ -487,4 +509,82 @@ enum BillingStatus {
   PARTIALLY_PAID
   PAID
   DISPUTED
+}
+
+enum ProductionStatus {
+  PENDING
+  PRODUCING
+  READY
+  CANCELLED
+}
+
+model Drawing {
+  id               String            @id @default(cuid())
+  projectId        String            @map("project_id")
+  packageId        String?           @map("package_id")
+  code             String            @map("code") // e.g. "Drawing F-101"
+  title            String            // e.g. "แบบติดตั้งงานเสารั้ว (F)"
+  revision         String            @default("01") // e.g. "03"
+  status           RecordStatus      @default(APPROVED)
+  approvedBy       String?           @map("approved_by") // e.g. "นายวิชาญ วิศวกรรม"
+  approvedAt       DateTime?         @map("approved_at")
+  notes            String?
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workPackage      WorkPackage?      @relation(fields: [packageId], references: [id])
+  bomItems         BomItem[]
+  materialRequests MaterialRequest[]
+
+  @@map("drawings")
+}
+
+model BomItem {
+  id               String                @id @default(cuid())
+  drawingId        String                @map("drawing_id")
+  itemCode         String                @map("item_code") // e.g. "F-PANEL-01"
+  name             String                // e.g. "แผ่นรั้ว F-PANEL-01"
+  quantity         Decimal               @db.Decimal(14, 3) // ปริมาณตาม BOM
+  additionalQty    Decimal               @default(0) @map("additional_qty") @db.Decimal(14, 3) // ปรับเพิ่ม
+  unit             String                // แผ่น, ต้น, ชิ้น, ชุด
+  spec             String?               // สเปก / ขนาด
+  category         String?               // ประเภทวัสดุ
+  requiredDate     DateTime?             @map("required_date")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+
+  drawing          Drawing               @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  requestItems     MaterialRequestItem[]
+  productionOrders ProductionOrder[]
+
+  @@map("bom_items")
+}
+
+model ProductionOrder {
+  id           String           @id @default(cuid())
+  orderNo      String           @unique @map("order_no") // e.g. "PRD-260008", "PRD-260009"
+  projectId    String           @map("project_id")
+  requestId    String?          @map("request_id")
+  bomItemId    String?          @map("bom_item_id")
+  itemCode     String           @map("item_code") // e.g. "F-PANEL-01"
+  itemName     String           @map("item_name") // e.g. "แผ่นรั้ว"
+  quantity     Decimal          @db.Decimal(14, 3) // e.g. 20, 10
+  unit         String           @default("แผ่น")
+  spec         String?
+  factory      String?          @default("ฝ่ายผลิต / โรงงานพรีคาสท์ PCC")
+  readyDate    DateTime?        @map("ready_date")
+  priority     String           @default("normal") // normal, urgent
+  status       ProductionStatus @default(PENDING) // PENDING, PRODUCING, READY, CANCELLED
+  latestUpdate String?          @map("latest_update") // e.g. "11 ก.ย. / ฝ่ายผลิต"
+  history      Json             @default("[]")
+  notes        String?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  request      MaterialRequest? @relation(fields: [requestId], references: [id])
+  bomItem      BomItem?         @relation(fields: [bomItemId], references: [id])
+
+  @@map("production_orders")
 }

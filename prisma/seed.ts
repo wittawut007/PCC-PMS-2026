@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus, TaskStatus } from "@prisma/client";
+import { PrismaClient, UserRole, WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus, TaskStatus, RecordStatus, ProductionStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getTemplateForWorkType, defaultPlan } from "../src/lib/templates";
 
@@ -298,6 +298,346 @@ async function main() {
             projectId: project.id,
             userId: m.userId,
             roleInProject: m.role,
+          }
+        });
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // Seed Drawings, BOM Items, Material Requests & Production Orders (Module 2)
+    // -------------------------------------------------------------------------
+    if (project.code === "PCC-26001") {
+      const pkgA = await prisma.workPackage.findFirst({
+        where: { projectId: project.id, code: "WP-F-01" }
+      });
+
+      const drawing = await prisma.drawing.upsert({
+        where: { id: "dwg-f-101" },
+        update: {
+          code: "Drawing F-101",
+          title: "แบบติดตั้งงานเสารั้ว (F)",
+          revision: "03",
+          status: RecordStatus.APPROVED,
+          packageId: pkgA?.id,
+          approvedBy: "นายวิชาญ วิศวกรรม",
+          approvedAt: new Date("2026-09-09T09:00:00Z"),
+          notes: "ควบคุมประวัติ Rev.01–03",
+        },
+        create: {
+          id: "dwg-f-101",
+          projectId: project.id,
+          packageId: pkgA?.id,
+          code: "Drawing F-101",
+          title: "แบบติดตั้งงานเสารั้ว (F)",
+          revision: "03",
+          status: RecordStatus.APPROVED,
+          approvedBy: "นายวิชาญ วิศวกรรม",
+          approvedAt: new Date("2026-09-09T09:00:00Z"),
+          notes: "ควบคุมประวัติ Rev.01–03",
+        }
+      });
+
+      const bomData = [
+        { id: "bom-f-01", itemCode: "F-PANEL-01", name: "แผ่นรั้ว F-PANEL-01", quantity: 100, additionalQty: 0, unit: "แผ่น", spec: "Precast Concrete Panel 0.50x2.50m", category: "ชิ้นส่วนคอนกรีตสำเร็จรูป" },
+        { id: "bom-f-02", itemCode: "F-POST-01", name: "เสารั้ว F-POST-01", quantity: 11, additionalQty: 0, unit: "ต้น", spec: "Precast Concrete Post 0.15x0.15x3.00m", category: "ชิ้นส่วนคอนกรีตสำเร็จรูป" },
+        { id: "bom-f-03", itemCode: "F-BEAM-01", name: "คานทับหลัง F-BEAM-01", quantity: 10, additionalQty: 0, unit: "ชิ้น", spec: "Capping Beam 0.15x0.10x2.50m", category: "ชิ้นส่วนคอนกรีตสำเร็จรูป" },
+        { id: "bom-f-04", itemCode: "JT-01", name: "วัสดุเก็บรอยต่อ JT-01", quantity: 10, additionalQty: 0, unit: "ชุด", spec: "Joint Mortar + Sealant", category: "วัสดุเก็บรอยต่อ" },
+      ];
+
+      for (const item of bomData) {
+        await prisma.bomItem.upsert({
+          where: { id: item.id },
+          update: {
+            itemCode: item.itemCode,
+            name: item.name,
+            quantity: item.quantity,
+            additionalQty: item.additionalQty,
+            unit: item.unit,
+            spec: item.spec,
+            category: item.category,
+          },
+          create: {
+            id: item.id,
+            drawingId: drawing.id,
+            itemCode: item.itemCode,
+            name: item.name,
+            quantity: item.quantity,
+            additionalQty: item.additionalQty,
+            unit: item.unit,
+            spec: item.spec,
+            category: item.category,
+          }
+        });
+      }
+
+      if (pkgA) {
+        const mr = await prisma.materialRequest.upsert({
+          where: { requestNo: "REQ-260012" },
+          update: {
+            packageId: pkgA.id,
+            drawingId: drawing.id,
+            drawingRev: "Rev.03",
+            neededBy: new Date("2026-09-14"),
+            status: RecordStatus.APPROVED,
+            notes: "ส่งโซน A · ติดต่อผู้รับเหมาหน้างานก่อนเข้าพื้นที่",
+            externalRef: "WH-260045",
+            warehouseName: "คลังหลักบางปะอิน",
+            storageLocation: "Zone B-04 / Lot 12",
+            confirmedBy: "เจ้าหน้าที่คลัง",
+            confirmedAt: new Date("2026-09-11T16:30:00Z"),
+            responseFileUrl: "WH-260045-confirmation.pdf",
+            warehouseNotes: "มีแผ่นรั้วในสต็อกพร้อมส่ง 70 แผ่น ส่วนขาด 30 แผ่นต้องรอผลิตเพิ่ม เสาและคานมีครบ",
+          },
+          create: {
+            requestNo: "REQ-260012",
+            projectId: project.id,
+            packageId: pkgA.id,
+            drawingId: drawing.id,
+            drawingRev: "Rev.03",
+            neededBy: new Date("2026-09-14"),
+            status: RecordStatus.APPROVED,
+            notes: "ส่งโซน A · ติดต่อผู้รับเหมาหน้างานก่อนเข้าพื้นที่",
+            externalRef: "WH-260045",
+            warehouseName: "คลังหลักบางปะอิน",
+            storageLocation: "Zone B-04 / Lot 12",
+            confirmedBy: "เจ้าหน้าที่คลัง",
+            confirmedAt: new Date("2026-09-11T16:30:00Z"),
+            responseFileUrl: "WH-260045-confirmation.pdf",
+            warehouseNotes: "มีแผ่นรั้วในสต็อกพร้อมส่ง 70 แผ่น ส่วนขาด 30 แผ่นต้องรอผลิตเพิ่ม เสาและคานมีครบ",
+          }
+        });
+
+        const mrItems = [
+          { itemCode: "F-PANEL-01", description: "แผ่นรั้ว F-PANEL-01", quantity: 100, unit: "แผ่น", allocated: 70, confirmed: 70, shortage: 30, bomItemId: "bom-f-01" },
+          { itemCode: "F-POST-01", description: "เสารั้ว F-POST-01", quantity: 11, unit: "ต้น", allocated: 11, confirmed: 11, shortage: 0, bomItemId: "bom-f-02" },
+          { itemCode: "F-BEAM-01", description: "คานทับหลัง F-BEAM-01", quantity: 10, unit: "ชิ้น", allocated: 10, confirmed: 10, shortage: 0, bomItemId: "bom-f-03" },
+        ];
+
+        for (const mri of mrItems) {
+          const existingItem = await prisma.materialRequestItem.findFirst({
+            where: { requestId: mr.id, itemCode: mri.itemCode }
+          });
+          if (existingItem) {
+            await prisma.materialRequestItem.update({
+              where: { id: existingItem.id },
+              data: {
+                quantity: mri.quantity,
+                unit: mri.unit,
+                allocated: mri.allocated,
+                confirmed: mri.confirmed,
+                shortage: mri.shortage,
+                bomItemId: mri.bomItemId,
+              }
+            });
+          } else {
+            await prisma.materialRequestItem.create({
+              data: {
+                requestId: mr.id,
+                itemCode: mri.itemCode,
+                description: mri.description,
+                quantity: mri.quantity,
+                unit: mri.unit,
+                allocated: mri.allocated,
+                confirmed: mri.confirmed,
+                shortage: mri.shortage,
+                bomItemId: mri.bomItemId,
+              }
+            });
+          }
+        }
+
+        await prisma.productionOrder.upsert({
+          where: { orderNo: "PRD-260008" },
+          update: {
+            projectId: project.id,
+            requestId: mr.id,
+            bomItemId: "bom-f-01",
+            itemCode: "F-PANEL-01",
+            itemName: "แผ่นรั้ว",
+            quantity: 20,
+            unit: "แผ่น",
+            readyDate: new Date("2026-09-14"),
+            status: ProductionStatus.PRODUCING,
+            latestUpdate: "11 ก.ย. / ฝ่ายผลิต",
+            history: [
+              { date: "11 ก.ย. 10:00", text: "ฝ่ายผลิตยืนยันรับคำสั่งผลิต 20 แผ่น เข้าไลน์หล่อแบบ" }
+            ],
+            notes: "ผลิตเสริมรอบปกติ",
+          },
+          create: {
+            orderNo: "PRD-260008",
+            projectId: project.id,
+            requestId: mr.id,
+            bomItemId: "bom-f-01",
+            itemCode: "F-PANEL-01",
+            itemName: "แผ่นรั้ว",
+            quantity: 20,
+            unit: "แผ่น",
+            readyDate: new Date("2026-09-14"),
+            status: ProductionStatus.PRODUCING,
+            latestUpdate: "11 ก.ย. / ฝ่ายผลิต",
+            history: [
+              { date: "11 ก.ย. 10:00", text: "ฝ่ายผลิตยืนยันรับคำสั่งผลิต 20 แผ่น เข้าไลน์หล่อแบบ" }
+            ],
+            notes: "ผลิตเสริมรอบปกติ",
+          }
+        });
+
+        await prisma.productionOrder.upsert({
+          where: { orderNo: "PRD-260009" },
+          update: {
+            projectId: project.id,
+            requestId: mr.id,
+            bomItemId: "bom-f-01",
+            itemCode: "F-PANEL-01",
+            itemName: "แผ่นรั้ว",
+            quantity: 10,
+            unit: "แผ่น",
+            readyDate: null,
+            status: ProductionStatus.PENDING,
+            latestUpdate: "12 ก.ย. / ผู้ประสาน",
+            history: [
+              { date: "12 ก.ย. 09:00", text: "ส่งคำขอเพิ่ม 10 แผ่นจากยอดขาด" },
+              { date: "12 ก.ย. 11:00", text: "ผู้ประสานติดตามกำหนดพร้อมส่ง" }
+            ],
+            notes: "ขอผลิตเพิ่ม 10 แผ่นจากส่วนขาดยืนยัน",
+          },
+          create: {
+            orderNo: "PRD-260009",
+            projectId: project.id,
+            requestId: mr.id,
+            bomItemId: "bom-f-01",
+            itemCode: "F-PANEL-01",
+            itemName: "แผ่นรั้ว",
+            quantity: 10,
+            unit: "แผ่น",
+            readyDate: null,
+            status: ProductionStatus.PENDING,
+            latestUpdate: "12 ก.ย. / ผู้ประสาน",
+            history: [
+              { date: "12 ก.ย. 09:00", text: "ส่งคำขอเพิ่ม 10 แผ่นจากยอดขาด" },
+              { date: "12 ก.ย. 11:00", text: "ผู้ประสานติดตามกำหนดพร้อมส่ง" }
+            ],
+            notes: "ขอผลิตเพิ่ม 10 แผ่นจากส่วนขาดยืนยัน",
+          }
+        });
+      }
+    } else if (project.code === "PCC-26002") {
+      const pkgRW = await prisma.workPackage.findFirst({
+        where: { projectId: project.id, code: "WP-RW-01" }
+      });
+      const drawing = await prisma.drawing.upsert({
+        where: { id: "dwg-rw-201" },
+        update: {
+          code: "Drawing RW-201",
+          title: "แบบติดตั้งงานกำแพงกันดิน (L-Wall)",
+          revision: "02",
+          status: RecordStatus.APPROVED,
+          packageId: pkgRW?.id,
+          approvedBy: "นายสมชาย วิศวกรรม",
+          approvedAt: new Date("2026-08-25T10:00:00Z"),
+          notes: "รับรองแบบฐานรากและแผงกันดิน L-Wall",
+        },
+        create: {
+          id: "dwg-rw-201",
+          projectId: project.id,
+          packageId: pkgRW?.id,
+          code: "Drawing RW-201",
+          title: "แบบติดตั้งงานกำแพงกันดิน (L-Wall)",
+          revision: "02",
+          status: RecordStatus.APPROVED,
+          approvedBy: "นายสมชาย วิศวกรรม",
+          approvedAt: new Date("2026-08-25T10:00:00Z"),
+          notes: "รับรองแบบฐานรากและแผงกันดิน L-Wall",
+        }
+      });
+
+      const bomItemsRW = [
+        { id: "bom-rw-01", itemCode: "RW-LWALL-01", name: "แผ่นผนังกันดิน L-Wall 2.0m", quantity: 125, unit: "แผ่น", spec: "L-Shape Precast Wall H=2.0m L=2.0m", category: "ชิ้นส่วนคอนกรีตสำเร็จรูป" },
+        { id: "bom-rw-02", itemCode: "RW-KEY-01", name: "สลักล็อกรอยต่อ Shear Key", quantity: 130, unit: "ชิ้น", spec: "Galvanized Steel Connector", category: "ข้อต่อเหล็ก" },
+        { id: "bom-rw-03", itemCode: "RW-GROUT-01", name: "ปูนเกราท์กำลังสูง Non-Shrink", quantity: 80, unit: "ถุง", spec: "High Strength Non-Shrink Grout", category: "วัสดุประสาน" },
+      ];
+
+      for (const item of bomItemsRW) {
+        await prisma.bomItem.upsert({
+          where: { id: item.id },
+          update: {
+            itemCode: item.itemCode,
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            spec: item.spec,
+            category: item.category,
+          },
+          create: {
+            id: item.id,
+            drawingId: drawing.id,
+            itemCode: item.itemCode,
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            spec: item.spec,
+            category: item.category,
+          }
+        });
+      }
+    } else if (project.code === "PCC-26004") {
+      const pkgPT = await prisma.workPackage.findFirst({
+        where: { projectId: project.id, code: "WP-PT-01" }
+      });
+      const drawing = await prisma.drawing.upsert({
+        where: { id: "dwg-pt-401" },
+        update: {
+          code: "Drawing PT-401",
+          title: "แบบวางแนวลวดโพสเทนชั่น (PT Slab)",
+          revision: "04",
+          status: RecordStatus.APPROVED,
+          packageId: pkgPT?.id,
+          approvedBy: "นายวิชาญ วิศวกรรม",
+          approvedAt: new Date("2026-09-28T14:00:00Z"),
+          notes: "อนุมัติแนวลวด Tendon Profile และตำแหน่ง Anchor Block AP1-AP7",
+        },
+        create: {
+          id: "dwg-pt-401",
+          projectId: project.id,
+          packageId: pkgPT?.id,
+          code: "Drawing PT-401",
+          title: "แบบวางแนวลวดโพสเทนชั่น (PT Slab)",
+          revision: "04",
+          status: RecordStatus.APPROVED,
+          approvedBy: "นายวิชาญ วิศวกรรม",
+          approvedAt: new Date("2026-09-28T14:00:00Z"),
+          notes: "อนุมัติแนวลวด Tendon Profile และตำแหน่ง Anchor Block AP1-AP7",
+        }
+      });
+
+      const bomItemsPT = [
+        { id: "bom-pt-01", itemCode: "PT-STRAND-01", name: "ลวดอัดแรง PC Strand 0.5 นิ้ว (12.7mm)", quantity: 4500, unit: "เมตร", spec: "Unbonded 7-wire strand ASTM A416", category: "ลวดอัดแรง" },
+        { id: "bom-pt-02", itemCode: "PT-ANCHOR-01", name: "หัวยึดสมอ Anchor Head + Castings", quantity: 180, unit: "ชุด", spec: "Monostrand Live End Anchor System", category: "ระบบสมอยึด" },
+        { id: "bom-pt-03", itemCode: "PT-BARREL-01", name: "ลิ่มยึดลวด 2-Part Wedges", quantity: 360, unit: "ชิ้น", spec: "Hardened steel wedges", category: "ระบบสมอยึด" },
+        { id: "bom-pt-04", itemCode: "PT-CHAIR-01", name: "ขาหยั่งลวด Support Chair", quantity: 650, unit: "ตัว", spec: "Plastic tipped bar chair H=80-140mm", category: "อุปกรณ์จัดระดับ" },
+      ];
+
+      for (const item of bomItemsPT) {
+        await prisma.bomItem.upsert({
+          where: { id: item.id },
+          update: {
+            itemCode: item.itemCode,
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            spec: item.spec,
+            category: item.category,
+          },
+          create: {
+            id: item.id,
+            drawingId: drawing.id,
+            itemCode: item.itemCode,
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            spec: item.spec,
+            category: item.category,
           }
         });
       }
