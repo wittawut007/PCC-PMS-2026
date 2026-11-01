@@ -738,6 +738,119 @@ async function main() {
             notes: "เที่ยวรถเสริมสำหรับแผ่นทดแทนและแผ่นที่สั่งผลิตเพิ่ม",
           },
         });
+
+        // ---------------------------------------------------------------------
+        // Seed QC Inspections & NCR Records (SVG 19, 24, 25)
+        // ---------------------------------------------------------------------
+        await prisma.qcInspection.upsert({
+          where: { inspectionNo: "IR-260023" },
+          update: {
+            projectId: project.id,
+            packageId: pkgA.id,
+            scope: "F01–F10",
+            drawingRef: "Drawing F-101 Rev.03",
+            status: "RE_INSPECT",
+            inspector: "QC โครงการ (นายสมชาย ตรวจสอบ)",
+            inspectedAt: new Date("2026-09-12T15:00:00Z"),
+            checklist: [
+              { item: "แนวและระดับ", ref: "ผลวัดแนบ SUR-F-012", status: "passed", statusLabel: "ผ่าน" },
+              { item: "ส่วนประกอบ / การยึด", ref: "Checklist F Rev.02", status: "passed", statusLabel: "ผ่าน" },
+              { item: "ผิวและรอยต่อ F08", ref: "ภาพ defect-F08.jpg", status: "failed", statusLabel: "ไม่ผ่าน" },
+              { item: "ความครบถ้วนเอกสาร", ref: "แบบ / วัสดุ / ผลวัด", status: "passed", statusLabel: "ครบ" },
+            ],
+            notes: "แก้ไขผิวและรอยต่อ F08 แนบหลักฐานก่อนตรวจซ้ำ",
+            ncrCode: "NCR-260006",
+            photos: ["survey-01.jpg", "qc-inspect-02.jpg"],
+          },
+          create: {
+            inspectionNo: "IR-260023",
+            projectId: project.id,
+            packageId: pkgA.id,
+            scope: "F01–F10",
+            drawingRef: "Drawing F-101 Rev.03",
+            status: "RE_INSPECT",
+            inspector: "QC โครงการ (นายสมชาย ตรวจสอบ)",
+            inspectedAt: new Date("2026-09-12T15:00:00Z"),
+            checklist: [
+              { item: "แนวและระดับ", ref: "ผลวัดแนบ SUR-F-012", status: "passed", statusLabel: "ผ่าน" },
+              { item: "ส่วนประกอบ / การยึด", ref: "Checklist F Rev.02", status: "passed", statusLabel: "ผ่าน" },
+              { item: "ผิวและรอยต่อ F08", ref: "ภาพ defect-F08.jpg", status: "failed", statusLabel: "ไม่ผ่าน" },
+              { item: "ความครบถ้วนเอกสาร", ref: "แบบ / วัสดุ / ผลวัด", status: "passed", statusLabel: "ครบ" },
+            ],
+            notes: "แก้ไขผิวและรอยต่อ F08 แนบหลักฐานก่อนตรวจซ้ำ",
+            ncrCode: "NCR-260006",
+            photos: ["survey-01.jpg", "qc-inspect-02.jpg"],
+          },
+        });
+
+        await prisma.ncrRecord.upsert({
+          where: { code: "NCR-260006" },
+          update: {
+            projectId: project.id,
+            code: "NCR-260006",
+            description: "ผิวและรอยต่อบริเวณ F08 ไม่ผ่านรายการตรวจ",
+            severity: "MAJOR",
+            location: "F08",
+            referenceDoc: "IR-260023",
+            assignedTo: "ทีมติดตั้ง / วิศวกรหน้างาน",
+            dueDate: new Date("2026-09-14"),
+            status: "OPEN",
+            correctiveAction: "ดำเนินการตามวิธีที่วิศวกรอนุมัติ และขอตรวจซ้ำ",
+            verificationNotes: "ยังไม่แนบ · ต้องระบุวันและผู้ดำเนินงาน",
+            history: [
+              { title: "พบข้อบกพร่อง", at: "12 ก.ย. 15:00 · QC โครงการ", done: true },
+              { title: "มอบหมายแก้ไข", at: "ทีมติดตั้ง · กำหนด 14 ก.ย.", done: true },
+              { title: "ส่งตรวจซ้ำ", at: "รอหลักฐานหลังแก้ไข", done: false },
+              { title: "ปิด NCR", at: "ผู้มีอำนาจตรวจผ่านเท่านั้น", done: false },
+            ],
+          },
+          create: {
+            code: "NCR-260006",
+            projectId: project.id,
+            description: "ผิวและรอยต่อบริเวณ F08 ไม่ผ่านรายการตรวจ",
+            severity: "MAJOR",
+            location: "F08",
+            referenceDoc: "IR-260023",
+            assignedTo: "ทีมติดตั้ง / วิศวกรหน้างาน",
+            dueDate: new Date("2026-09-14"),
+            status: "OPEN",
+            correctiveAction: "ดำเนินการตามวิธีที่วิศวกรอนุมัติ และขอตรวจซ้ำ",
+            verificationNotes: "ยังไม่แนบ · ต้องระบุวันและผู้ดำเนินงาน",
+            history: [
+              { title: "พบข้อบกพร่อง", at: "12 ก.ย. 15:00 · QC โครงการ", done: true },
+              { title: "มอบหมายแก้ไข", at: "ทีมติดตั้ง · กำหนด 14 ก.ย.", done: true },
+              { title: "ส่งตรวจซ้ำ", at: "รอหลักฐานหลังแก้ไข", done: false },
+              { title: "ปิด NCR", at: "ผู้มีอำนาจตรวจผ่านเท่านั้น", done: false },
+            ],
+          },
+        });
+
+        // ---------------------------------------------------------------------
+        // Seed Daily Log (SVG 26)
+        // ---------------------------------------------------------------------
+        const existingLog = await prisma.dailyLog.findFirst({
+          where: { projectId: project.id, logDate: new Date("2026-09-12") }
+        });
+        if (!existingLog) {
+          await prisma.dailyLog.create({
+            data: {
+              projectId: project.id,
+              packageId: pkgA.id,
+              logDate: new Date("2026-09-12"),
+              location: "F01–F05",
+              activity: "ติดตั้งแผ่น",
+              quantity: 20,
+              unit: "แผ่น",
+              workers: 6,
+              workHours: 8,
+              equipment: "รถ / เครื่องยก 1 คัน 4 ชม. (CC-F-EQP)",
+              description: "ติดตั้งแผ่นรั้วสำเร็จรูป F-PANEL-01 ได้ 20 แผ่น ตามแนวเสา F01-F05",
+              issues: "F08 รอวัสดุทดแทนและแก้ไขรอยต่อ",
+              status: "DRAFT",
+              qcStatus: "NOT_VERIFIED",
+            },
+          });
+        }
       }
     } else if (project.code === "PCC-26002") {
       const pkgRW = await prisma.workPackage.findFirst({
@@ -856,6 +969,104 @@ async function main() {
             spec: item.spec,
             category: item.category,
           }
+        });
+      }
+
+      // Seed AP1 - AP7 Approval Gates for PT Project (SVG 23)
+      const ptGates = [
+        {
+          gateCode: "AP1",
+          title: "AP1 · Layout / Site",
+          unlockedAction: "เบิกและส่ง PT เข้าโซน",
+          status: "PASSED",
+          pourZone: "ชั้น 2 / P01",
+          notes: "ผ่านการตรวจสอบแนวลวดและตำแหน่งสมอยึดเรียบร้อย",
+        },
+        {
+          gateCode: "AP2",
+          title: "AP2 · Pre-Pour",
+          unlockedAction: "ยืนยันส่งคอนกรีต / เท",
+          status: "PASSED",
+          pourZone: "ชั้น 2 / P01",
+          notes: "ตรวจสอบความเรียบร้อยก่อนเทคอนกรีต",
+        },
+        {
+          gateCode: "AP3",
+          title: "AP3 · กำลังอัดคอนกรีต",
+          unlockedAction: "Assign อุปกรณ์จริง > AP4",
+          status: "UNDER_REVIEW",
+          pourZone: "ชั้น 2 / P01",
+          testResult: "LAB-P01-003",
+          standardRef: "SPEC-PT Rev.02",
+          approver: "ผู้มีอำนาจ AP3",
+          notes: "ยังไม่อนุญาตดึง ต้องผ่าน AP3 และ AP4 การเตรียมเอกสารทำล่วงหน้าได้",
+        },
+        {
+          gateCode: "AP4",
+          title: "AP4 · อุปกรณ์ / Calibration",
+          unlockedAction: "เริ่มดึงเมื่อ AP3 ยังมีผล",
+          status: "WAITING_PREV",
+          pourZone: "ชั้น 2 / P01",
+          notes: "รอ AP3 ผ่านการอนุมัติกำลังอัด",
+        },
+        {
+          gateCode: "AP5",
+          title: "AP5 · ผล Stressing",
+          unlockedAction: "Grouting · ยังไม่ตัดปลาย",
+          status: "NOT_STARTED",
+          pourZone: "ชั้น 2 / P01",
+          notes: "ยังไม่เริ่มงานดึงลวด",
+        },
+        {
+          gateCode: "AP6",
+          title: "AP6 · ผล Grouting",
+          unlockedAction: "ตัดปลาย / อุดหัวสมอตามวิธี",
+          status: "NOT_STARTED",
+          pourZone: "ชั้น 2 / P01",
+          notes: "ยังไม่เริ่มงานเกราท์",
+        },
+        {
+          gateCode: "AP7",
+          title: "AP7 · รับมอบ / ถอดค้ำยัน",
+          unlockedAction: "อนุญาตเฉพาะขอบเขตผ่าน",
+          status: "NOT_STARTED",
+          pourZone: "ชั้น 2 / P01",
+          notes: "ยังไม่เริ่มการตรวจรับมอบ",
+        },
+      ];
+
+      for (const gate of ptGates) {
+        await prisma.approvalGate.upsert({
+          where: {
+            projectId_gateCode: {
+              projectId: project.id,
+              gateCode: gate.gateCode,
+            },
+          },
+          update: {
+            packageId: pkgPT?.id,
+            title: gate.title,
+            unlockedAction: gate.unlockedAction,
+            status: gate.status,
+            pourZone: gate.pourZone,
+            testResult: gate.testResult,
+            standardRef: gate.standardRef,
+            approver: gate.approver,
+            notes: gate.notes,
+          },
+          create: {
+            projectId: project.id,
+            packageId: pkgPT?.id,
+            gateCode: gate.gateCode,
+            title: gate.title,
+            unlockedAction: gate.unlockedAction,
+            status: gate.status,
+            pourZone: gate.pourZone,
+            testResult: gate.testResult,
+            standardRef: gate.standardRef,
+            approver: gate.approver,
+            notes: gate.notes,
+          },
         });
       }
     }

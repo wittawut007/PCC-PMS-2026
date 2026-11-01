@@ -90,6 +90,9 @@ model Project {
   members          ProjectMember[]
   productionOrders ProductionOrder[]
   publications     Publication[]
+  qcInspections    QcInspection[]
+  approvalGates    ApprovalGate[]
+  ncrRecords       NcrRecord[]
   tasks            Task[]
   transportTrips   TransportTrip[]
   workPackages     WorkPackage[]
@@ -128,6 +131,9 @@ model WorkPackage {
   materialRequests MaterialRequest[]
   tasks            Task[]
   transportTrips   TransportTrip[]
+  qcInspections    QcInspection[]
+  approvalGates    ApprovalGate[]
+  dailyLogs        DailyLog[]
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   workflowRecords  WorkflowRecord[]
 
@@ -182,18 +188,26 @@ model WorkflowRecord {
 }
 
 model NcrRecord {
-  id          String         @id @default(cuid())
-  recordId    String         @map("record_id")
-  code        String         @unique
-  description String
-  severity    NcrSeverity    @default(MAJOR)
-  assignedTo  String?        @map("assigned_to")
-  dueDate     DateTime?      @map("due_date")
-  closedAt    DateTime?      @map("closed_at")
-  status      NcrStatus      @default(OPEN)
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  record      WorkflowRecord @relation(fields: [recordId], references: [id])
+  id                String         @id @default(cuid())
+  recordId          String?        @map("record_id")
+  projectId         String?        @map("project_id")
+  code              String         @unique
+  description       String
+  severity          NcrSeverity    @default(MAJOR)
+  assignedTo        String?        @map("assigned_to")
+  dueDate           DateTime?      @map("due_date")
+  closedAt          DateTime?      @map("closed_at")
+  status            NcrStatus      @default(OPEN)
+  location          String?
+  referenceDoc      String?        @map("reference_doc")
+  correctiveAction  String?        @map("corrective_action")
+  verificationNotes String?        @map("verification_notes")
+  history           Json           @default("[]")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  record            WorkflowRecord? @relation(fields: [recordId], references: [id])
+  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("ncr_records")
 }
@@ -201,21 +215,76 @@ model NcrRecord {
 model DailyLog {
   id            String         @id @default(cuid())
   projectId     String         @map("project_id")
-  taskId        String         @map("task_id")
+  packageId     String?        @map("package_id")
+  taskId        String?        @map("task_id")
   logDate       DateTime       @map("log_date") @db.Date
+  location      String?
+  activity      String?
   quantity      Decimal?       @db.Decimal(14, 3)
   unit          String?
   description   String?
   issues        String?
   workers       Int?
-  createdById   String         @map("created_by_id")
+  workHours     Decimal?       @map("work_hours") @db.Decimal(5, 2)
+  equipment     String?
+  status        String         @default("DRAFT")
+  qcStatus      String         @default("NOT_VERIFIED") @map("qc_status")
+  photos        Json           @default("[]")
+  createdById   String?        @map("created_by_id")
   createdAt     DateTime       @default(now()) @map("created_at")
-  createdBy     User           @relation(fields: [createdById], references: [id])
-  project       Project        @relation(fields: [projectId], references: [id])
-  task          Task           @relation(fields: [taskId], references: [id])
+  createdBy     User?          @relation(fields: [createdById], references: [id])
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workPackage   WorkPackage?   @relation(fields: [packageId], references: [id])
+  task          Task?          @relation(fields: [taskId], references: [id])
   evidenceFiles EvidenceFile[]
 
   @@map("daily_logs")
+}
+
+model QcInspection {
+  id           String       @id @default(cuid())
+  inspectionNo String       @unique @map("inspection_no")
+  projectId    String       @map("project_id")
+  packageId    String?      @map("package_id")
+  scope        String?
+  drawingRef   String?      @map("drawing_ref")
+  status       String       @default("RE_INSPECT")
+  inspector    String?      @default("QC โครงการ")
+  inspectedAt  DateTime?    @map("inspected_at")
+  checklist    Json         @default("[]")
+  notes        String?
+  photos       Json         @default("[]")
+  ncrCode      String?      @map("ncr_code")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workPackage  WorkPackage? @relation(fields: [packageId], references: [id])
+
+  @@map("qc_inspections")
+}
+
+model ApprovalGate {
+  id             String       @id @default(cuid())
+  projectId      String       @map("project_id")
+  packageId      String?      @map("package_id")
+  gateCode       String       @map("gate_code")
+  title          String
+  unlockedAction String       @map("unlocked_action")
+  status         String       @default("WAITING")
+  pourZone       String?      @map("pour_zone")
+  testResult     String?      @map("test_result")
+  standardRef    String?      @map("standard_ref")
+  approver       String?
+  notes          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  project        Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workPackage    WorkPackage? @relation(fields: [packageId], references: [id])
+
+  @@unique([projectId, gateCode])
+  @@map("approval_gates")
 }
 
 model EvidenceFile {
