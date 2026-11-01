@@ -3,7 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus } from "@prisma/client";
+import { WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus, TaskStatus } from "@prisma/client";
+import { getTemplateForWorkType, defaultPlan } from "@/lib/templates";
 
 export interface CreateProjectInput {
   name: string;
@@ -102,7 +103,7 @@ export async function createProjectAction(input: CreateProjectInput) {
     for (let i = 0; i < input.packages.length; i++) {
       const pkg = input.packages[i];
       const pkgCode = `WP-${input.type}-${String(i + 1).padStart(2, "0")}`;
-      await tx.workPackage.create({
+      const createdPkg = await tx.workPackage.create({
         data: {
           projectId: project.id,
           code: pkgCode,
@@ -115,6 +116,31 @@ export async function createProjectAction(input: CreateProjectInput) {
           notes: pkg.crew ? `ทีมช่าง: ${pkg.crew} (${pkg.crewContact || "—"})` : null,
         },
       });
+
+      // Generate Tasks from Template
+      const template = getTemplateForWorkType(input.type);
+      const startStr = input.start || new Date().toISOString().slice(0, 10);
+      const planItems = defaultPlan(template, startStr);
+
+      for (let idx = 0; idx < planItems.length; idx++) {
+        const item = planItems[idx];
+        await tx.task.create({
+          data: {
+            projectId: project.id,
+            packageId: createdPkg.id,
+            code: item.code,
+            name: item.title,
+            stepIndex: idx + 1,
+            status: TaskStatus.PENDING,
+            plannedStart: new Date(item.start),
+            plannedEnd: new Date(item.end),
+            dependsOn: item.predecessor ? [item.predecessor] : [],
+            isGate: item.isGate,
+            gateCode: item.gateCode,
+            notes: JSON.stringify({ type: item.type, responsible: item.responsible, duration: item.duration }),
+          },
+        });
+      }
     }
 
     // 4. Create Project Members

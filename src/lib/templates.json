@@ -1,0 +1,507 @@
+{
+  "RW": [
+    {
+      "code": "RW-01",
+      "title": "เคลียร์พื้นที่และขุดเปิดร่องดินฐานราก",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": ""
+    },
+    {
+      "code": "RW-02",
+      "title": "วางผังแนวเขตและตำแหน่งเสาเข็มคู่",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RW-01"
+    },
+    {
+      "code": "RW-AP1",
+      "title": "[อนุมัติจุดที่ 1] อนุมัติแนวผังและตำแหน่งเสาเข็ม",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RW-02"
+    },
+    {
+      "code": "RW-03",
+      "title": "เจาะหลุมและหย่อนเสาเข็มสำเร็จรูป",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RW-AP1"
+    },
+    {
+      "code": "RW-04",
+      "title": "ตัดหัวเสาเข็มและเท Lean Concrete ปรับระดับ",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RW-03"
+    },
+    {
+      "code": "RW-AP2",
+      "title": "[อนุมัติจุดที่ 2] อนุมัติความพร้อมฐานราก",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RW-04"
+    },
+    {
+      "code": "RW-05",
+      "title": "ผูกเหล็กเสริมฐานราก Footing Rebar (DB12)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RW-AP2"
+    },
+    {
+      "code": "RW-06",
+      "title": "ยกติดตั้งแผ่น Precast L-Wall เข้าแนว",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RW-05"
+    },
+    {
+      "code": "RW-AP3",
+      "title": "[อนุมัติจุดที่ 3] อนุมัติตรวจสอบก่อนเทคอนกรีต Footing",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RW-06"
+    },
+    {
+      "code": "RW-07",
+      "title": "เทคอนกรีตฐานราก Footing หุ้มขา L-Wall",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RW-AP3"
+    },
+    {
+      "code": "RW-08",
+      "title": "บ่มคอนกรีตและรอพัฒนากำลัง (Curing)",
+      "type": "Task",
+      "duration": 3,
+      "predecessor": "RW-07"
+    },
+    {
+      "code": "RW-09",
+      "title": "ยารอยต่อแผ่น L-Wall + ติดตั้ง Weephole & Geotextile",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RW-08"
+    },
+    {
+      "code": "RW-10",
+      "title": "ถมดินกลับหลังกำแพงเป็นชั้นๆ และบดอัด",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RW-09"
+    },
+    {
+      "code": "RW-11",
+      "title": "ตรวจสอบ QC รอบสุดท้ายและเก็บรายละเอียด",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RW-10"
+    },
+    {
+      "code": "RW-AP4",
+      "title": "[อนุมัติจุดที่ 4] อนุมัติส่งมอบงานกำแพงกันดิน",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RW-11"
+    }
+  ],
+  "RWF": [
+    {
+      "code": "RWF-01",
+      "title": "เคลียร์พื้นที่และขุดเปิดร่องฐานราก",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": ""
+    },
+    {
+      "code": "RWF-02",
+      "title": "วางผังแนวเขตและตำแหน่งเสาเข็มคู่ (P1, P2)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-01"
+    },
+    {
+      "code": "RWF-AP1",
+      "title": "[อนุมัติจุดที่ 1] อนุมัติแนวผังหมุดเขตและตำแหน่งเข็ม",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RWF-02"
+    },
+    {
+      "code": "RWF-03",
+      "title": "เจาะหลุมและหย่อนเสาเข็มคู่ (P1, P2)",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RWF-AP1"
+    },
+    {
+      "code": "RWF-04",
+      "title": "ตัดหัวเข็มและเท Lean Concrete ปรับระดับ",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-03"
+    },
+    {
+      "code": "RWF-AP2",
+      "title": "[อนุมัติจุดที่ 2] อนุมัติความพร้อมฐานราก",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RWF-04"
+    },
+    {
+      "code": "RWF-05",
+      "title": "ผูกเหล็กเสริม Footing Rebar (DB12)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-AP2"
+    },
+    {
+      "code": "RWF-06",
+      "title": "ยกติดตั้งแผ่น L-Wall (รุ่นมีช่องรับเสารั้ว)",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RWF-05"
+    },
+    {
+      "code": "RWF-AP3",
+      "title": "[อนุมัติจุดที่ 3] อนุมัติตรวจสอบก่อนเทคอนกรีต Footing",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RWF-06"
+    },
+    {
+      "code": "RWF-07",
+      "title": "เทคอนกรีตฐานราก Footing หุ้มขา L-Wall",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-AP3"
+    },
+    {
+      "code": "RWF-08",
+      "title": "บ่มคอนกรีต + ยารอยต่อแผ่น L-Wall + ท่อระบายน้ำ",
+      "type": "Task",
+      "duration": 3,
+      "predecessor": "RWF-07"
+    },
+    {
+      "code": "RWF-AP4",
+      "title": "[อนุมัติจุดที่ 4] อนุมัติโครงสร้าง L-Wall พร้อมรับงานรั้ว",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RWF-08"
+    },
+    {
+      "code": "RWF-09",
+      "title": "ติดตั้งเสารั้วสำเร็จรูปในเบ้า L-Wall + หยอด Grout",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-AP4"
+    },
+    {
+      "code": "RWF-AP5",
+      "title": "[อนุมัติจุดที่ 5] อนุมัติแนวดิ่งและระยะ Span เสารั้ว",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RWF-09"
+    },
+    {
+      "code": "RWF-10",
+      "title": "สอดแผ่นรั้วคอนกรีตสำเร็จรูป (Planks) ตามร่องเสา",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RWF-AP5"
+    },
+    {
+      "code": "RWF-11",
+      "title": "ติดตั้งแผ่นครอบทับหลัง (Capping) ปิดบนหัวเสา",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-10"
+    },
+    {
+      "code": "RWF-12",
+      "title": "ยาแนวรอยต่อเสา-แผ่นรั้ว และตกแต่งผิว",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-11"
+    },
+    {
+      "code": "RWF-13",
+      "title": "ถมดินกลับหลังกำแพงและบดอัด",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "RWF-12"
+    },
+    {
+      "code": "RWF-14",
+      "title": "ตรวจสอบ QC ภาพรวมทั้งกำแพงและรั้ว",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "RWF-13"
+    },
+    {
+      "code": "RWF-AP6",
+      "title": "[อนุมัติจุดที่ 6] อนุมัติส่งมอบงานโครงการสมบูรณ์",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "RWF-14"
+    }
+  ],
+  "F": [
+    {
+      "code": "F-01",
+      "title": "เคลียร์พื้นที่และวางแนวกึ่งกลางรั้ว (Center Line)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": ""
+    },
+    {
+      "code": "F-AP1",
+      "title": "[อนุมัติจุดที่ 1] อนุมัติแนวศูนย์กลางรั้วและตำแหน่งหลุม",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "F-01"
+    },
+    {
+      "code": "F-02",
+      "title": "เจาะหลุมและลงเสาเข็มเดี่ยวประจำเสารั้ว",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "F-AP1"
+    },
+    {
+      "code": "F-03",
+      "title": "หล่อฐานราก / เบ้า Socket รับเสารั้วบนหัวเข็ม",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "F-02"
+    },
+    {
+      "code": "F-AP2",
+      "title": "[อนุมัติจุดที่ 2] อนุมัติความพร้อมเบ้าฐานรากรับเสา",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "F-03"
+    },
+    {
+      "code": "F-04",
+      "title": "ยกติดตั้งเสารั้วลงในเบ้า Socket + เทปูน Grout ยึด",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "F-AP2"
+    },
+    {
+      "code": "F-AP3",
+      "title": "[อนุมัติจุดที่ 3] อนุมัติแนวดิ่งและความตรงแนวเสารั้ว",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "F-04"
+    },
+    {
+      "code": "F-05",
+      "title": "สอดแผ่นรั้วคอนกรีตสำเร็จรูป (Planks) ลงตามร่องเสา",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "F-AP3"
+    },
+    {
+      "code": "F-06",
+      "title": "ติดตั้งแผ่นครอบทับหลัง (Capping) ปิดบนหัวเสา",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "F-05"
+    },
+    {
+      "code": "F-07",
+      "title": "ยาแนวรอยต่อแผ่นรั้ว-เสา และทำความสะอาดผิว",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "F-06"
+    },
+    {
+      "code": "F-08",
+      "title": "ตรวจสอบ QC ภาพรวมและบันทึกภาพถ่าย",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "F-07"
+    },
+    {
+      "code": "F-AP4",
+      "title": "[อนุมัติจุดที่ 4] อนุมัติส่งมอบงานรั้วสำเร็จรูป",
+      "type": "Milestone",
+      "duration": 1,
+      "predecessor": "F-08"
+    }
+  ],
+  "PT": [
+    {
+      "code": "PT-01",
+      "title": "วางแผนงาน PT, แบ่งโซนเท และประสานแผนงาน",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "",
+      "strict": false
+    },
+    {
+      "code": "PT-02",
+      "title": "สำรวจและตรวจสอบความพร้อมหน้างาน (แบบหล่อ/นั่งร้าน)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-01 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-03",
+      "title": "ตรวจแบบ Shop Drawing, Tendon Layout และเตรียมวัสดุ",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-02 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP1",
+      "title": "[จุดอนุมัติ 1] อนุมัติแบบ Tendon Layout และความพร้อมหน้างาน",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-03 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-04",
+      "title": "ติดตั้ง Flat Duct, เก้าอี้หนุน (Chair) และหัวสมอ (Anchorage)",
+      "type": "Task",
+      "duration": 2,
+      "predecessor": "PT-AP1 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-05",
+      "title": "ร้อยลวด PC Strand (12.7 มม.), เสริม Bursting Rebar และใส่ Vent",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-04 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-06",
+      "title": "ตรวจสอบความพร้อมรอบสุดท้ายก่อนเทคอนกรีต",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-05 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP2",
+      "title": "[จุดอนุมัติ 2: STRICT HOLD POINT] อนุมัติความพร้อมก่อนเทคอนกรีต",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-06 FS",
+      "strict": true
+    },
+    {
+      "code": "PT-07",
+      "title": "เทคอนกรีตพื้นโครงสร้าง (ระวังไม่กระทบท่อ Duct)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-AP2 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-08",
+      "title": "บ่มคอนกรีตชื้น และทดสอบกำลังอัดลูกปูน (Compressive Test)",
+      "type": "Task",
+      "duration": 3,
+      "predecessor": "PT-07 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP3",
+      "title": "[จุดอนุมัติ 3: STRICT HOLD POINT] อนุมัติกำลังอัดคอนกรีตก่อนดึงลวด",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-08 FS",
+      "strict": true
+    },
+    {
+      "code": "PT-09",
+      "title": "ตรวจสอบสเปกอุปกรณ์และผลสอบเทียบแม่แรงไฮดรอลิก",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-AP3 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP4",
+      "title": "[จุดอนุมัติ 4] อนุมัติความถูกต้องของแม่แรงและเกจวัดแรง AIT",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-09 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-10",
+      "title": "ถอด Pocket Former, ใส่ Wedges และดึงลวดอัดแรง (Stressing)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-AP4 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-11",
+      "title": "วัดระยะยืดตัว (Elongation), ตรวจ Slip และบันทึกรายงาน",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-10 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP5",
+      "title": "[จุดอนุมัติ 5: STRICT HOLD POINT] รับรองผลการดึงลวดอัดแรงโดยวิศวกร",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-11 FS",
+      "strict": true
+    },
+    {
+      "code": "PT-12",
+      "title": "ผสมน้ำปูนเกร้าท์ และทดสอบการไหลลื่น/เยิ้มน้ำ (Fluidity/Bleed)",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-AP5 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-13",
+      "title": "ปฏิบัติการอัดน้ำปูนเกร้าท์เข้าท่อ Duct ครบทุก Cable",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-12 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP6",
+      "title": "[จุดอนุมัติ 6] อนุมัติตรวจรับงานอัดน้ำปูนเกร้าท์สมบูรณ์",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-13 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-14",
+      "title": "ตัดปลายลวด Strand และอุดโพรงหัวดึงด้วย Non-shrink Grout",
+      "type": "Task",
+      "duration": 1,
+      "predecessor": "PT-AP6 FS",
+      "strict": false
+    },
+    {
+      "code": "PT-AP7",
+      "title": "[จุดอนุมัติ 7: FINAL MILESTONE] อนุมัติส่งมอบงานประจำชั้น & อนุญาตถอดค้ำยัน",
+      "type": "Hold Point",
+      "duration": 1,
+      "predecessor": "PT-14 FS",
+      "strict": false
+    }
+  ]
+}

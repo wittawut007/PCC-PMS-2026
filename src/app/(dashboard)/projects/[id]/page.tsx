@@ -76,8 +76,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   // Sub navigation tabs matching views.js
   const projectTabs = [
     { id: "overview", label: "ภาพรวม", href: `/projects/${project.id}`, active: true },
-    { id: "planning", label: "แผนงาน", href: `/planning?project=${project.id}`, active: false },
-    { id: "calendar", label: "ปฏิทิน", href: `/planning?project=${project.id}&view=calendar`, active: false },
+    { id: "planning", label: "แผนงาน", href: `/planning?projectId=${project.id}`, active: false },
+    { id: "calendar", label: "ปฏิทิน", href: `/planning?projectId=${project.id}&view=calendar`, active: false },
     { id: "materials", label: "วัสดุและคลัง", href: `/materials?project=${project.id}`, active: false },
     { id: "transport", label: "การขนส่ง & ตรวจรับ", href: `/transport?project=${project.id}`, active: false },
     { id: "installation", label: "การติดตั้ง & QC", href: `/installation?project=${project.id}`, active: false },

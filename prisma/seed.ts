@@ -1,5 +1,6 @@
-import { PrismaClient, UserRole, WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus } from "@prisma/client";
+import { PrismaClient, UserRole, WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus, TaskStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { getTemplateForWorkType, defaultPlan } from "../src/lib/templates";
 
 const prisma = new PrismaClient();
 
@@ -195,13 +196,14 @@ async function main() {
       },
     });
 
-    // Packages
+    // Packages and Tasks
     for (const pkg of p.packages) {
       const existingPkg = await prisma.workPackage.findFirst({
         where: { projectId: project.id, code: pkg.code }
       });
+      let packageRecord;
       if (existingPkg) {
-        await prisma.workPackage.update({
+        packageRecord = await prisma.workPackage.update({
           where: { id: existingPkg.id },
           data: {
             name: pkg.name,
@@ -213,7 +215,7 @@ async function main() {
           }
         });
       } else {
-        await prisma.workPackage.create({
+        packageRecord = await prisma.workPackage.create({
           data: {
             projectId: project.id,
             code: pkg.code,
@@ -225,6 +227,63 @@ async function main() {
             status: pkg.status,
           }
         });
+      }
+
+      // Generate WBS Tasks for Package from WorkType Template
+      const template = getTemplateForWorkType(p.workType);
+      const startDateStr = p.startDate.toISOString().slice(0, 10);
+      const planItems = defaultPlan(template, startDateStr);
+
+      for (let idx = 0; idx < planItems.length; idx++) {
+        const item = planItems[idx];
+
+        // Status logic for demo: first 35% done, next in_progress, rest pending
+        let status: TaskStatus = TaskStatus.PENDING;
+        if (p.status === ProjectStatus.ACTIVE) {
+          if (idx < Math.floor(planItems.length * 0.35)) {
+            status = TaskStatus.DONE;
+          } else if (idx === Math.floor(planItems.length * 0.35)) {
+            status = TaskStatus.IN_PROGRESS;
+          }
+        }
+
+        const existingTask = await prisma.task.findFirst({
+          where: { packageId: packageRecord.id, code: item.code }
+        });
+
+        if (existingTask) {
+          await prisma.task.update({
+            where: { id: existingTask.id },
+            data: {
+              name: item.title,
+              stepIndex: idx + 1,
+              status,
+              plannedStart: new Date(item.start),
+              plannedEnd: new Date(item.end),
+              dependsOn: item.predecessor ? [item.predecessor] : [],
+              isGate: item.isGate,
+              gateCode: item.gateCode,
+              notes: JSON.stringify({ type: item.type, responsible: item.responsible, duration: item.duration }),
+            }
+          });
+        } else {
+          await prisma.task.create({
+            data: {
+              projectId: project.id,
+              packageId: packageRecord.id,
+              code: item.code,
+              name: item.title,
+              stepIndex: idx + 1,
+              status,
+              plannedStart: new Date(item.start),
+              plannedEnd: new Date(item.end),
+              dependsOn: item.predecessor ? [item.predecessor] : [],
+              isGate: item.isGate,
+              gateCode: item.gateCode,
+              notes: JSON.stringify({ type: item.type, responsible: item.responsible, duration: item.duration }),
+            }
+          });
+        }
       }
     }
 
