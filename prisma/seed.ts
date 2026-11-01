@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus, TaskStatus, RecordStatus, ProductionStatus } from "@prisma/client";
+import { PrismaClient, UserRole, WorkType, ProjectStatus, ProjectMemberRole, WorkPackageStatus, TaskStatus, RecordStatus, ProductionStatus, TripStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getTemplateForWorkType, defaultPlan } from "../src/lib/templates";
 
@@ -520,6 +520,223 @@ async function main() {
             ],
             notes: "ขอผลิตเพิ่ม 10 แผ่นจากส่วนขาดยืนยัน",
           }
+        });
+
+        // ---------------------------------------------------------------------
+        // Seed Transport Trips & Receiving Records (SVG 16, 17, 18)
+        // ---------------------------------------------------------------------
+        // Trip 1: TRN-260018 (ถึงไซต์แล้ว / รับบางส่วน ค้าง 2)
+        const trip18 = await prisma.transportTrip.upsert({
+          where: { tripNo: "TRN-260018" },
+          update: {
+            projectId: project.id,
+            packageId: pkgA.id,
+            requestId: mr.id,
+            origin: "คลังภายนอก",
+            destination: "โซน A",
+            deliveryNoteNo: "DN-260045",
+            cargoDescription: "แผ่นรั้ว 100 แผ่น (รับดี 98 / เสีย 2)",
+            cargoQty: 100,
+            unit: "แผ่น",
+            status: TripStatus.ARRIVED,
+            scheduledAt: new Date("2026-09-12T09:00:00Z"),
+            departedAt: new Date("2026-09-12T07:30:00Z"),
+            arrivedAt: new Date("2026-09-12T09:15:00Z"),
+            driverName: "สมเกียรติ มั่นคง (เจ้าหน้าที่ขนส่ง)",
+            driverPhone: "081-234-5678",
+            plateNo: "70-8899 พระนครศรีอยุธยา",
+            timeline: [
+              { title: "วางแผนเที่ยวรถ", at: "11 ก.ย. 15:00", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ออกจากคลัง", at: "12 ก.ย. 07:30", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ถึงไซต์", at: "12 ก.ย. 09:15", by: "ผู้รับหน้างาน", done: true },
+              { title: "รอตรวจรับ", at: "ต้องยืนยันจำนวนและสภาพจริง", by: "วิศวกรหน้างาน", done: false },
+            ],
+            notes: "ขนส่งแผ่นรั้วงวดแรก 100 แผ่น พร้อมเอกสาร DN-260045",
+          },
+          create: {
+            tripNo: "TRN-260018",
+            projectId: project.id,
+            packageId: pkgA.id,
+            requestId: mr.id,
+            origin: "คลังภายนอก",
+            destination: "โซน A",
+            deliveryNoteNo: "DN-260045",
+            cargoDescription: "แผ่นรั้ว 100 แผ่น (รับดี 98 / เสีย 2)",
+            cargoQty: 100,
+            unit: "แผ่น",
+            status: TripStatus.ARRIVED,
+            scheduledAt: new Date("2026-09-12T09:00:00Z"),
+            departedAt: new Date("2026-09-12T07:30:00Z"),
+            arrivedAt: new Date("2026-09-12T09:15:00Z"),
+            driverName: "สมเกียรติ มั่นคง (เจ้าหน้าที่ขนส่ง)",
+            driverPhone: "081-234-5678",
+            plateNo: "70-8899 พระนครศรีอยุธยา",
+            timeline: [
+              { title: "วางแผนเที่ยวรถ", at: "11 ก.ย. 15:00", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ออกจากคลัง", at: "12 ก.ย. 07:30", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ถึงไซต์", at: "12 ก.ย. 09:15", by: "ผู้รับหน้างาน", done: true },
+              { title: "รอตรวจรับ", at: "ต้องยืนยันจำนวนและสภาพจริง", by: "วิศวกรหน้างาน", done: false },
+            ],
+            notes: "ขนส่งแผ่นรั้วงวดแรก 100 แผ่น พร้อมเอกสาร DN-260045",
+          },
+        });
+
+        await prisma.receivingRecord.upsert({
+          where: { tripId: trip18.id },
+          update: {
+            receivedAt: new Date("2026-09-12T10:00:00Z"),
+            receivedBy: "วิศวกรหน้างาน",
+            deliveredQty: 100,
+            actualQty: 100,
+            goodQty: 98,
+            badQty: 2,
+            missingQty: 0,
+            status: "PARTIAL",
+            damageNotes: "แผ่นรั้ว 2 แผ่นบิ่นบริเวณขอบ · แยกไว้พื้นที่กักกัน",
+            attachedFiles: ["DN-260045.pdf", "damage-01.jpg", "damage-02.jpg"],
+            notes: "รับจริง 100 = ดี 98 + เสีย 2 • ขาด 0 • แยก 2 แผ่นไว้รอการจัดการ",
+          },
+          create: {
+            tripId: trip18.id,
+            receivedAt: new Date("2026-09-12T10:00:00Z"),
+            receivedBy: "วิศวกรหน้างาน",
+            deliveredQty: 100,
+            actualQty: 100,
+            goodQty: 98,
+            badQty: 2,
+            missingQty: 0,
+            status: "PARTIAL",
+            damageNotes: "แผ่นรั้ว 2 แผ่นบิ่นบริเวณขอบ · แยกไว้พื้นที่กักกัน",
+            attachedFiles: ["DN-260045.pdf", "damage-01.jpg", "damage-02.jpg"],
+            notes: "รับจริง 100 = ดี 98 + เสีย 2 • ขาด 0 • แยก 2 แผ่นไว้รอการจัดการ",
+          },
+        });
+
+        // Trip 2: TRN-260017 (ส่งเสร็จ / รับครบ)
+        const trip17 = await prisma.transportTrip.upsert({
+          where: { tripNo: "TRN-260017" },
+          update: {
+            projectId: project.id,
+            packageId: pkgA.id,
+            origin: "คลังภายนอก",
+            destination: "โซน A (ช่วง F01–F10)",
+            deliveryNoteNo: "DN-260040",
+            cargoDescription: "เสารั้ว 11 ต้น (ช่วง F01–F10)",
+            cargoQty: 11,
+            unit: "ต้น",
+            status: TripStatus.COMPLETED,
+            scheduledAt: new Date("2026-09-11T14:00:00Z"),
+            departedAt: new Date("2026-09-11T11:30:00Z"),
+            arrivedAt: new Date("2026-09-11T13:45:00Z"),
+            deliveredAt: new Date("2026-09-11T15:00:00Z"),
+            driverName: "วันชัย ส่งดี",
+            plateNo: "70-5544 พระนครศรีอยุธยา",
+            timeline: [
+              { title: "วางแผนเที่ยวรถ", at: "10 ก.ย. 14:00", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ออกจากคลัง", at: "11 ก.ย. 11:30", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ถึงไซต์", at: "11 ก.ย. 13:45", by: "ผู้รับหน้างาน", done: true },
+              { title: "ตรวจรับครบ", at: "11 ก.ย. 15:00", by: "วิศวกรหน้างาน", done: true },
+            ],
+            notes: "ส่งเสารั้ว 11 ต้นครบถ้วน",
+          },
+          create: {
+            tripNo: "TRN-260017",
+            projectId: project.id,
+            packageId: pkgA.id,
+            origin: "คลังภายนอก",
+            destination: "โซน A (ช่วง F01–F10)",
+            deliveryNoteNo: "DN-260040",
+            cargoDescription: "เสารั้ว 11 ต้น (ช่วง F01–F10)",
+            cargoQty: 11,
+            unit: "ต้น",
+            status: TripStatus.COMPLETED,
+            scheduledAt: new Date("2026-09-11T14:00:00Z"),
+            departedAt: new Date("2026-09-11T11:30:00Z"),
+            arrivedAt: new Date("2026-09-11T13:45:00Z"),
+            deliveredAt: new Date("2026-09-11T15:00:00Z"),
+            driverName: "วันชัย ส่งดี",
+            plateNo: "70-5544 พระนครศรีอยุธยา",
+            timeline: [
+              { title: "วางแผนเที่ยวรถ", at: "10 ก.ย. 14:00", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ออกจากคลัง", at: "11 ก.ย. 11:30", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "ถึงไซต์", at: "11 ก.ย. 13:45", by: "ผู้รับหน้างาน", done: true },
+              { title: "ตรวจรับครบ", at: "11 ก.ย. 15:00", by: "วิศวกรหน้างาน", done: true },
+            ],
+            notes: "ส่งเสารั้ว 11 ต้นครบถ้วน",
+          },
+        });
+
+        await prisma.receivingRecord.upsert({
+          where: { tripId: trip17.id },
+          update: {
+            receivedAt: new Date("2026-09-11T15:00:00Z"),
+            receivedBy: "วิศวกรหน้างาน",
+            deliveredQty: 11,
+            actualQty: 11,
+            goodQty: 11,
+            badQty: 0,
+            missingQty: 0,
+            status: "COMPLETE",
+            damageNotes: "ตรวจรับเสาครบถ้วนตามแบบ ไม่มีความเสียหาย",
+            attachedFiles: ["DN-260040.pdf"],
+            notes: "รับครบตามใบส่งสินค้า",
+          },
+          create: {
+            tripId: trip17.id,
+            receivedAt: new Date("2026-09-11T15:00:00Z"),
+            receivedBy: "วิศวกรหน้างาน",
+            deliveredQty: 11,
+            actualQty: 11,
+            goodQty: 11,
+            badQty: 0,
+            missingQty: 0,
+            status: "COMPLETE",
+            damageNotes: "ตรวจรับเสาครบถ้วนตามแบบ ไม่มีความเสียหาย",
+            attachedFiles: ["DN-260040.pdf"],
+            notes: "รับครบตามใบส่งสินค้า",
+          },
+        });
+
+        // Trip 3: TRN-260019 (วางแผน / ยังไม่รับ)
+        await prisma.transportTrip.upsert({
+          where: { tripNo: "TRN-260019" },
+          update: {
+            projectId: project.id,
+            packageId: pkgA.id,
+            origin: "โรงงานพรีคาสท์ PCC",
+            destination: "โซน A",
+            cargoDescription: "แผ่นทดแทน 2 แผ่น + เพิ่ม 10 แผ่น",
+            cargoQty: 12,
+            unit: "แผ่น",
+            status: TripStatus.SCHEDULED,
+            scheduledAt: new Date("2026-09-14T10:00:00Z"),
+            driverName: "รอยืนยันคนขับ",
+            plateNo: "รอยืนยันทะเบียน",
+            timeline: [
+              { title: "วางแผนเที่ยวรถ", at: "12 ก.ย. 16:00", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "รอออกจากคลัง", at: "14 ก.ย. 08:00", by: "เจ้าหน้าที่ขนส่ง", done: false },
+            ],
+            notes: "เที่ยวรถเสริมสำหรับแผ่นทดแทนและแผ่นที่สั่งผลิตเพิ่ม",
+          },
+          create: {
+            tripNo: "TRN-260019",
+            projectId: project.id,
+            packageId: pkgA.id,
+            origin: "โรงงานพรีคาสท์ PCC",
+            destination: "โซน A",
+            cargoDescription: "แผ่นทดแทน 2 แผ่น + เพิ่ม 10 แผ่น",
+            cargoQty: 12,
+            unit: "แผ่น",
+            status: TripStatus.SCHEDULED,
+            scheduledAt: new Date("2026-09-14T10:00:00Z"),
+            driverName: "รอยืนยันคนขับ",
+            plateNo: "รอยืนยันทะเบียน",
+            timeline: [
+              { title: "วางแผนเที่ยวรถ", at: "12 ก.ย. 16:00", by: "เจ้าหน้าที่ขนส่ง", done: true },
+              { title: "รอออกจากคลัง", at: "14 ก.ย. 08:00", by: "เจ้าหน้าที่ขนส่ง", done: false },
+            ],
+            notes: "เที่ยวรถเสริมสำหรับแผ่นทดแทนและแผ่นที่สั่งผลิตเพิ่ม",
+          },
         });
       }
     } else if (project.code === "PCC-26002") {

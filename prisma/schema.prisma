@@ -91,6 +91,7 @@ model Project {
   productionOrders ProductionOrder[]
   publications     Publication[]
   tasks            Task[]
+  transportTrips   TransportTrip[]
   workPackages     WorkPackage[]
   workflowRecords  WorkflowRecord[]
 
@@ -126,6 +127,7 @@ model WorkPackage {
   drawings         Drawing[]
   materialRequests MaterialRequest[]
   tasks            Task[]
+  transportTrips   TransportTrip[]
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   workflowRecords  WorkflowRecord[]
 
@@ -288,35 +290,54 @@ model MaterialRequestItem {
 }
 
 model TransportTrip {
-  id          String           @id @default(cuid())
-  requestId   String           @map("request_id")
-  tripNo      String           @unique @map("trip_no")
-  driverName  String?          @map("driver_name")
-  plateNo     String?          @map("plate_no")
-  status      TripStatus       @default(SCHEDULED)
-  scheduledAt DateTime?        @map("scheduled_at")
-  departedAt  DateTime?        @map("departed_at")
-  arrivedAt   DateTime?        @map("arrived_at")
-  notes       String?
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
-  receiving   ReceivingRecord?
-  request     MaterialRequest  @relation(fields: [requestId], references: [id])
+  id               String           @id @default(cuid())
+  projectId        String?          @map("project_id")
+  packageId        String?          @map("package_id")
+  requestId        String?          @map("request_id")
+  tripNo           String           @unique @map("trip_no")
+  driverName       String?          @map("driver_name")
+  driverPhone      String?          @map("driver_phone")
+  plateNo          String?          @map("plate_no")
+  origin           String?          @default("คลังภายนอก")
+  destination      String?          @default("โซน A")
+  deliveryNoteNo   String?          @map("delivery_note_no")
+  cargoDescription String?          @map("cargo_description")
+  cargoQty         Decimal?         @map("cargo_qty") @db.Decimal(14, 3)
+  unit             String?          @default("แผ่น")
+  status           TripStatus       @default(SCHEDULED)
+  scheduledAt      DateTime?        @map("scheduled_at")
+  departedAt       DateTime?        @map("departed_at")
+  arrivedAt        DateTime?        @map("arrived_at")
+  deliveredAt      DateTime?        @map("delivered_at")
+  timeline         Json             @default("[]")
+  notes            String?
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  receiving        ReceivingRecord?
+  project          Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workPackage      WorkPackage?     @relation(fields: [packageId], references: [id])
+  request          MaterialRequest? @relation(fields: [requestId], references: [id])
 
   @@map("transport_trips")
 }
 
 model ReceivingRecord {
-  id         String        @id @default(cuid())
-  tripId     String        @unique @map("trip_id")
-  receivedAt DateTime      @map("received_at")
-  goodQty    Decimal       @map("good_qty") @db.Decimal(14, 3)
-  badQty     Decimal       @map("bad_qty") @db.Decimal(14, 3)
-  missingQty Decimal       @map("missing_qty") @db.Decimal(14, 3)
-  receivedBy String        @map("received_by")
-  notes      String?
-  createdAt  DateTime      @default(now()) @map("created_at")
-  trip       TransportTrip @relation(fields: [tripId], references: [id])
+  id             String        @id @default(cuid())
+  tripId         String        @unique @map("trip_id")
+  receivedAt     DateTime      @map("received_at")
+  receivedBy     String        @map("received_by")
+  deliveredQty   Decimal       @default(0) @map("delivered_qty") @db.Decimal(14, 3)
+  actualQty      Decimal       @default(0) @map("actual_qty") @db.Decimal(14, 3)
+  goodQty        Decimal       @map("good_qty") @db.Decimal(14, 3)
+  badQty         Decimal       @map("bad_qty") @db.Decimal(14, 3)
+  missingQty     Decimal       @map("missing_qty") @db.Decimal(14, 3)
+  damageNotes    String?       @map("damage_notes")
+  attachedFiles  Json          @default("[]") @map("attached_files")
+  status         String        @default("PARTIAL")
+  notes          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  trip           TransportTrip @relation(fields: [tripId], references: [id], onDelete: Cascade)
 
   @@map("receiving_records")
 }
