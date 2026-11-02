@@ -17,7 +17,7 @@ async function main() {
     { id: "qc-001", name: "QC Inspector", email: "qc@pcc.co.th", role: UserRole.QC_INSPECTOR, password: "PccDemo2026!" },
     { id: "wh-001", name: "คลังสินค้า", email: "warehouse@pcc.co.th", role: UserRole.WAREHOUSE, password: "PccDemo2026!" },
     { id: "tr-001", name: "พนักงานขนส่ง", email: "transport@pcc.co.th", role: UserRole.TRANSPORT, password: "PccDemo2026!" },
-    { id: "own-001", name: "เจ้าของโครงการ A", email: "owner@client.co.th", role: UserRole.OWNER, password: "PccDemo2026!" },
+    { id: "own-001", name: "คุณกิตติ เจ้าของโครงการ", email: "owner@pcc.co.th", role: UserRole.OWNER, password: "PccDemo2026!" },
   ];
 
   for (const u of users) {

@@ -17,6 +17,8 @@ import {
   Users,
   Settings,
   HelpCircle,
+  CheckSquare,
+  ClipboardCheck,
 } from "lucide-react";
 
 const navItems = [
@@ -61,6 +63,11 @@ const navItems = [
     icon: Calendar,
   },
   {
+    label: "งานรออนุมัติ",
+    href: "/approvals",
+    icon: CheckSquare,
+  },
+  {
     label: "งบประมาณ / ต้นทุน",
     href: "/costs",
     icon: Wallet,
@@ -69,6 +76,11 @@ const navItems = [
     label: "รายงานสรุป",
     href: "/reports",
     icon: BarChart3,
+  },
+  {
+    label: "ตรวจรับมอบ & ปิดงาน",
+    href: "/handover",
+    icon: ClipboardCheck,
   },
   {
     label: "พอร์ทัลเจ้าของ",

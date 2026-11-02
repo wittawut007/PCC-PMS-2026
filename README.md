@@ -43,7 +43,7 @@ npm run db:seed
 npm run dev
 ```
 
-เปิด **http://localhost:3000**
+เปิด **http://localhost:3002**
 
 ---
 
@@ -58,14 +58,14 @@ npm run dev
 | `qc@pcc.co.th` | `PccDemo2026!` | QC Inspector |
 | `warehouse@pcc.co.th` | `PccDemo2026!` | คลัง/จัดซื้อ |
 | `transport@pcc.co.th` | `PccDemo2026!` | ขนส่ง |
-| `owner@client.co.th` | `PccDemo2026!` | เจ้าของโครงการ |
+| `owner@pcc.co.th` | `PccDemo2026!` | เจ้าของโครงการ |
 
 ---
 
 ## 🛠 Scripts
 
 ```bash
-npm run dev          # Dev server (http://localhost:3000)
+npm run dev          # Dev server (http://localhost:3002)
 npm run build        # Production build
 npm run start        # Production server
 npm run db:migrate   # Run Prisma migrations
