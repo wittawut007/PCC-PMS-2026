@@ -97,6 +97,9 @@ model Project {
   transportTrips   TransportTrip[]
   workPackages     WorkPackage[]
   workflowRecords  WorkflowRecord[]
+  budgetItems      BudgetItem[]
+  handoverItems    HandoverItem[]
+  approvalTasks    ApprovalTask[]
 
   @@map("projects")
 }
@@ -134,6 +137,7 @@ model WorkPackage {
   qcInspections    QcInspection[]
   approvalGates    ApprovalGate[]
   dailyLogs        DailyLog[]
+  budgetItems      BudgetItem[]
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   workflowRecords  WorkflowRecord[]
 
@@ -677,4 +681,69 @@ model ProductionOrder {
   bomItem      BomItem?         @relation(fields: [bomItemId], references: [id])
 
   @@map("production_orders")
+}
+
+model BudgetItem {
+  id            String       @id @default(cuid())
+  projectId     String       @map("project_id")
+  packageId     String?      @map("package_id")
+  packageTitle  String       @map("package_title")
+  budgetAmount  Decimal      @default(0) @map("budget_amount") @db.Decimal(16, 2)
+  actualCost    Decimal      @default(0) @map("actual_cost") @db.Decimal(16, 2)
+  committedCost Decimal      @default(0) @map("committed_cost") @db.Decimal(16, 2)
+  forecastTotal Decimal      @default(0) @map("forecast_total") @db.Decimal(16, 2)
+  paidAmount    Decimal      @default(0) @map("paid_amount") @db.Decimal(16, 2)
+  variance      Decimal      @default(0) @map("variance") @db.Decimal(16, 2)
+  notes         String?
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workPackage   WorkPackage? @relation(fields: [packageId], references: [id])
+
+  @@map("budget_items")
+}
+
+model HandoverItem {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  title       String
+  ownerRole   String   @map("owner_role")
+  status      String   @default("PENDING")
+  statusLabel String   @map("status_label")
+  statusTone  String   @default("gray") @map("status_tone")
+  sortOrder   Int      @default(1) @map("sort_order")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("handover_items")
+}
+
+model ApprovalTask {
+  id           String    @id @default(cuid())
+  projectId    String    @map("project_id")
+  requestCode  String    @map("request_code")
+  title        String
+  category     String
+  requestedBy  String    @map("requested_by")
+  assignedRole String    @map("assigned_role")
+  assignedTo   String?   @map("assigned_to")
+  packageCode  String?   @map("package_code")
+  bomRef       String?   @map("bom_ref")
+  requiredDate DateTime? @map("required_date")
+  dueDate      DateTime? @map("due_date")
+  status       String    @default("PENDING")
+  statusLabel  String    @map("status_label")
+  tabGroup     String    @default("WAITING_ME") @map("tab_group")
+  details      Json?     @default("{}")
+  referenceDoc String?   @map("reference_doc")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("approval_tasks")
 }

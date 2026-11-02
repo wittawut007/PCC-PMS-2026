@@ -1,8 +1,10 @@
 "use client";
 
-import { Bell } from "lucide-react";
+import Link from "next/link";
+import { Bell, LogOut } from "lucide-react";
 import { userRoleLabel } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 interface TopbarProps {
   user: {
@@ -93,15 +95,16 @@ export function Topbar({ user }: TopbarProps) {
       </div>
 
       {/* Right: Actions & Profile */}
-      <div className="flex items-center gap-4">
-        {/* Notification Bell */}
-        <button
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Notification Bell -> Approvals (SVG 32) */}
+        <Link
+          href="/approvals"
           className="relative p-2 text-[#7086A8] hover:text-[#0D255B] hover:bg-[#F5F8FC] rounded-lg transition-colors"
-          title="การแจ้งเตือน"
+          title="งานรออนุมัติและการแจ้งเตือน (SVG 32)"
         >
           <Bell className="w-5 h-5" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#B72839] rounded-full border-2 border-white" />
-        </button>
+        </Link>
 
         <div className="h-6 w-px bg-[#E4EAF4]" />
 
@@ -119,6 +122,19 @@ export function Topbar({ user }: TopbarProps) {
             </div>
           </div>
         </div>
+
+        <div className="h-6 w-px bg-[#E4EAF4]" />
+
+        {/* Logout Button */}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          title="ออกจากระบบ"
+          aria-label="ออกจากระบบ"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7086A8] hover:text-[#B72839] hover:bg-[#FFF0F1] rounded-lg border border-transparent hover:border-[#FECDCA] transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          <span className="hidden sm:inline">ออกจากระบบ</span>
+        </button>
       </div>
     </header>
   );

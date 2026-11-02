@@ -851,6 +851,270 @@ async function main() {
             },
           });
         }
+
+        // ---------------------------------------------------------------------
+        // Seed Budget Items (SVG 27)
+        // ---------------------------------------------------------------------
+        const budgetData = [
+          {
+            packageTitle: "งานกำแพงกันดิน (L-Wall)",
+            budgetAmount: 3.00,
+            actualCost: 2.10,
+            committedCost: 0.40,
+            forecastTotal: 3.05,
+            paidAmount: 1.80,
+            variance: 0.05,
+            notes: "งานถมดินและแผ่น L-Wall โซน 1-2",
+          },
+          {
+            packageTitle: "งานกำแพงกันดินพร้อมเสารั้ว (L-Wall+F)",
+            budgetAmount: 2.50,
+            actualCost: 1.60,
+            committedCost: 0.50,
+            forecastTotal: 2.65,
+            paidAmount: 1.40,
+            variance: 0.15,
+            notes: "ปรับระดับคันกั้นน้ำและจุดต่อเสารั้ว",
+          },
+          {
+            packageTitle: "งานเสารั้ว (F)",
+            budgetAmount: 1.50,
+            actualCost: 0.90,
+            committedCost: 0.30,
+            forecastTotal: 1.60,
+            paidAmount: 0.80,
+            variance: 0.10,
+            notes: "เสารั้วสำเร็จรูป F01–F10 และงานเก็บรอยต่อ",
+          },
+          {
+            packageTitle: "งานพื้นโพสเทนชั่น (PT)",
+            budgetAmount: 3.00,
+            actualCost: 1.60,
+            committedCost: 0.80,
+            forecastTotal: 3.10,
+            paidAmount: 1.40,
+            variance: 0.10,
+            notes: "แนวลวด Tendon และอุปกรณ์หัวสมอยึด AP1-AP7",
+          },
+        ];
+
+        for (const b of budgetData) {
+          const existingBudget = await prisma.budgetItem.findFirst({
+            where: { projectId: project.id, packageTitle: b.packageTitle },
+          });
+          if (existingBudget) {
+            await prisma.budgetItem.update({
+              where: { id: existingBudget.id },
+              data: b,
+            });
+          } else {
+            await prisma.budgetItem.create({
+              data: {
+                projectId: project.id,
+                ...b,
+              },
+            });
+          }
+        }
+
+        // ---------------------------------------------------------------------
+        // Seed Handover Items (SVG 29)
+        // ---------------------------------------------------------------------
+        const handoverData = [
+          {
+            title: "Final Inspection / ขอบเขตส่งมอบ",
+            ownerRole: "QC / วิศวกร",
+            status: "PENDING",
+            statusLabel: "รอตรวจ",
+            statusTone: "orange",
+            sortOrder: 1,
+            notes: "รอผลการตรวจรับรองขอบเขตช่วงเสา F01-F10",
+          },
+          {
+            title: "NCR และงานแก้ไข",
+            ownerRole: "วิศวกรหน้างาน",
+            status: "HAS_ISSUES",
+            statusLabel: "ค้าง 1 รายการ",
+            statusTone: "rose",
+            sortOrder: 2,
+            notes: "ติดข้อบกพร่อง NCR-260006 รอยต่อผิว F08 รอส่งตรวจซ้ำ",
+          },
+          {
+            title: "As-built / Dossier",
+            ownerRole: "Document Control",
+            status: "COLLECTING",
+            statusLabel: "กำลังรวบรวม",
+            statusTone: "blue",
+            sortOrder: 3,
+            notes: "รวบรวมแบบ As-built Drawing F-101 Rev.03 และผลแล็บ",
+          },
+          {
+            title: "PT: AP7 และเงื่อนไขถอดค้ำยัน",
+            ownerRole: "ผู้มีอำนาจ AP7",
+            status: "NOT_READY",
+            statusLabel: "ยังไม่พร้อม",
+            statusTone: "gray",
+            sortOrder: 4,
+            notes: "ต้องผ่าน AP5 และ AP6 ก่อนอนุญาตถอดค้ำยัน",
+          },
+          {
+            title: "คืนวัสดุ / อุปกรณ์ / หลักฐานรับคืน",
+            ownerRole: "ผู้ประสาน / คลังภายนอก",
+            status: "NOT_STARTED",
+            statusLabel: "ยังไม่เริ่ม",
+            statusTone: "gray",
+            sortOrder: 5,
+            notes: "เคลียร์สต็อกคงค้างและคืนอุปกรณ์ค้ำยัน",
+          },
+          {
+            title: "ต้นทุนคงค้าง / บัญชี / เรียกเก็บ",
+            ownerRole: "Cost Control / บัญชี",
+            status: "READY_CLOSE",
+            statusLabel: "รอยปิดยอด",
+            statusTone: "amber",
+            sortOrder: 6,
+            notes: "สรุปยอดจ่ายจริง 5.40 ลบ. และเตรียมปิดบัญชีงวดสุดท้าย",
+          },
+        ];
+
+        for (const h of handoverData) {
+          const existingH = await prisma.handoverItem.findFirst({
+            where: { projectId: project.id, title: h.title },
+          });
+          if (existingH) {
+            await prisma.handoverItem.update({
+              where: { id: existingH.id },
+              data: h,
+            });
+          } else {
+            await prisma.handoverItem.create({
+              data: {
+                projectId: project.id,
+                ...h,
+              },
+            });
+          }
+        }
+
+        // ---------------------------------------------------------------------
+        // Seed Approval Tasks (SVG 32)
+        // ---------------------------------------------------------------------
+        const approvalData = [
+          {
+            requestCode: "REQ-260012",
+            title: "ขอเบิกวัสดุ",
+            category: "MATERIAL",
+            requestedBy: "ผู้วางแผน",
+            assignedRole: "PM",
+            packageCode: "WP-F-01",
+            bomRef: "Rev.03 / อนุมัติ",
+            requiredDate: new Date("2026-09-14"),
+            dueDate: new Date("2026-09-12"),
+            status: "PENDING",
+            statusLabel: "รอ PM",
+            tabGroup: "WAITING_ME",
+            details: {
+              summary: "ขอเบิกแผ่นรั้ว F-PANEL-01 จำนวน 20 แผ่น และเสารั้ว 10 ต้น",
+              warning: "เปิดรายละเอียดปริมาณ วันต้องใช้ และหลักฐานก่อนอนุมัติ",
+            },
+            referenceDoc: "BOM-F-101",
+          },
+          {
+            requestCode: "PT-AP3",
+            title: "กำลังอัด P01",
+            category: "GATE",
+            requestedBy: "วิศวกรสนาม",
+            assignedRole: "วิศวกร",
+            packageCode: "WP-PT-01",
+            bomRef: "SPEC-PT Rev.02",
+            requiredDate: new Date("2026-09-14"),
+            dueDate: new Date("2026-09-14"),
+            status: "PENDING",
+            statusLabel: "รอวิศวกร",
+            tabGroup: "WAITING_ME",
+            details: {
+              summary: "ผลทดสอบกำลังอัดลูกปูน 28 วัน LAB-P01-003 โซน P01",
+              warning: "ต้องผ่าน AP3 และ AP4 ก่อนอนุญาตดึงลวดอัดแรง",
+            },
+            referenceDoc: "LAB-P01-003",
+          },
+          {
+            requestCode: "IR-260023",
+            title: "ตรวจติดตั้ง",
+            category: "QC",
+            requestedBy: "ทีมติดตั้ง",
+            assignedRole: "QC",
+            packageCode: "WP-F-01",
+            bomRef: "Drawing F-101",
+            requiredDate: new Date("2026-09-13"),
+            dueDate: new Date("2026-09-12"),
+            status: "PENDING",
+            statusLabel: "รอ QC",
+            tabGroup: "WAITING_ME",
+            details: {
+              summary: "ขอตรวจติดตั้งเสารั้วช่วงเสา F01–F10 และซ่อมผิวรอยต่อ F08",
+              warning: "ตรวจสอบรายการข้อบกพร่องตาม NCR-260006 ให้ครบถ้วน",
+            },
+            referenceDoc: "NCR-260006",
+          },
+          {
+            requestCode: "CO-260002",
+            title: "ปรับงบ",
+            category: "BUDGET",
+            requestedBy: "PM โครงการ",
+            assignedRole: "ผู้บริหาร",
+            packageCode: "WP-RW-01",
+            bomRef: "งบประมาณปี 2569",
+            requiredDate: new Date("2026-09-15"),
+            dueDate: new Date("2026-09-15"),
+            status: "PENDING",
+            statusLabel: "รอผู้บริหาร",
+            tabGroup: "WAITING_ME",
+            details: {
+              summary: "ขออนุมัติเพิ่มงบ 0.50 ล้านบาท สำหรับปรับปรุงระดับดินแนวกันน้ำ",
+              warning: "กระทบงบประมาณจบงานภาพรวมของโครงการ",
+            },
+            referenceDoc: "CO-260002",
+          },
+          {
+            requestCode: "PUB-260009",
+            title: "เผยแพร่รายงาน",
+            category: "REPORT",
+            requestedBy: "Document Control",
+            assignedRole: "PM",
+            packageCode: "PCC-26001",
+            bomRef: "Monthly Report Sep 2026",
+            requiredDate: new Date("2026-09-15"),
+            dueDate: new Date("2026-09-15"),
+            status: "PENDING",
+            statusLabel: "รอ PM",
+            tabGroup: "WAITING_ME",
+            details: {
+              summary: "รายงานความก้าวหน้าโครงการ ประจำเดือนกันยายน 2569 สำหรับเผยแพร่ให้ Owner",
+              warning: "ตรวจสอบไม่ให้มีข้อมูลต้นทุนภายในปะปนในฉบับเผยแพร่",
+            },
+            referenceDoc: "REP-SEP-2026",
+          },
+        ];
+
+        for (const a of approvalData) {
+          const existingA = await prisma.approvalTask.findFirst({
+            where: { projectId: project.id, requestCode: a.requestCode },
+          });
+          if (existingA) {
+            await prisma.approvalTask.update({
+              where: { id: existingA.id },
+              data: a,
+            });
+          } else {
+            await prisma.approvalTask.create({
+              data: {
+                projectId: project.id,
+                ...a,
+              },
+            });
+          }
+        }
       }
     } else if (project.code === "PCC-26002") {
       const pkgRW = await prisma.workPackage.findFirst({

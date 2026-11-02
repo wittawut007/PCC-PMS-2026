@@ -16,10 +16,8 @@ import {
   BarChart3,
   Users,
   Settings,
-  LogOut,
   HelpCircle,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 
 const navItems = [
   {
@@ -85,7 +83,7 @@ const navItems = [
 ];
 
 interface SidebarProps {
-  user: {
+  user?: {
     name?: string | null;
     email?: string | null;
     role?: string | null;
@@ -93,7 +91,7 @@ interface SidebarProps {
   };
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps = {}) {
   const pathname = usePathname();
 
   return (
@@ -167,7 +165,7 @@ export function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* Bottom Area */}
-      <div className="p-3 border-t border-[#E4EAF4] space-y-2">
+      <div className="p-3 border-t border-[#E4EAF4]">
         {/* Support Box (SVG: ศูนย์ช่วยเหลือ) */}
         <div className="bg-[#F3F7FC] rounded-xl p-3 border border-[#E9EFF7]">
           <div className="flex items-center gap-2">
@@ -179,34 +177,6 @@ export function Sidebar({ user }: SidebarProps) {
           <p className="text-[11px] text-[#596780] mt-1 leading-normal">
             คู่มือและการติดต่อทีมงาน
           </p>
-        </div>
-
-        {/* User Card & Logout */}
-        <div className="flex items-center justify-between px-2 pt-1">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-full bg-[#EAF3FF] text-[#075DD8] font-bold text-xs flex items-center justify-center flex-shrink-0">
-              {user.role === "PM"
-                ? "PM"
-                : user.role === "SYSTEM_ADMIN"
-                ? "AD"
-                : user.name?.[0]?.toUpperCase() ?? "U"}
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-semibold text-[#0D255B] truncate">
-                {user.name}
-              </div>
-              <div className="text-[10px] text-[#596780] truncate">
-                {user.role}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            title="ออกจากระบบ"
-            className="p-1.5 text-[#7086A8] hover:text-[#B72839] hover:bg-[#FFF0F1] rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </aside>
