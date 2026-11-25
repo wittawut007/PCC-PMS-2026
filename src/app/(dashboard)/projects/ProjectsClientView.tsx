@@ -1,21 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
-  Filter,
-  ArrowRight,
+  Folder,
   FolderKanban,
-  CheckCircle2,
+  BarChart3,
   Clock,
   AlertTriangle,
-  Info,
+  RotateCcw,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Truck,
+  Box,
+  ShieldCheck,
+  Calendar,
+  Wallet,
+  TrendingUp,
+  User,
+  Layers,
+  ChevronRight,
+  SlidersHorizontal,
+  ArrowDownUp,
+  Check,
+  X,
 } from "lucide-react";
-import { formatThaiDate } from "@/lib/utils";
+import "./projects-dashboard.css";
+import { CallyDatePicker } from "@/components/common/CallyDatePicker";
 
-interface ProjectItem {
+export interface ProjectItem {
   id: string;
   code: string;
   name: string;
@@ -24,351 +41,1148 @@ interface ProjectItem {
   clientName: string;
   contractNo: string;
   baseValue: number;
+  budget: number;
+  actualCost: number;
   startDate: string | null;
   targetDate: string | null;
   pmName: string;
   donePct: number;
   qcPct: number;
-  attention: boolean;
-  note: string;
+  deliveredTrips: number;
+  totalTrips: number;
+  materialAllocated: number;
+  materialNeed: number;
+  materialUnit: string;
+  materialPct: number;
+  materialSummary: string;
+  documentsCount: number;
+  awaitingMaterialsCount: number;
+  qcPendingCount: number;
+  ncrCount: number;
+  overdueTasks: number;
+  attentionCount: number;
+  daysRemaining: number | null;
+  isNear: boolean;
+  isLate: boolean;
   packagesCount: number;
+}
+
+export interface CurrentUser {
+  name?: string | null;
+  email?: string | null;
+  role?: string | null;
 }
 
 interface ProjectsClientViewProps {
   initialProjects: ProjectItem[];
+  currentUser?: CurrentUser;
 }
 
-export function ProjectsClientView({ initialProjects }: ProjectsClientViewProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<string>("ALL");
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+const workTypeNames: Record<string, string> = {
+  F: "งานเสารั้ว แผ่นรั้ว ทับหลัง",
+  RW: "งานกำแพงกันดิน",
+  RWF: "งานกำแพงกันดิน เสารั้ว แผ่นรั้ว ทับหลัง",
+  PT: "งานพื้นโพสเทนชั่น",
+};
 
-  // Filtering
-  const filteredProjects = initialProjects.filter((p) => {
-    const matchesSearch =
-      !searchQuery.trim() ||
-      p.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.clientName.toLowerCase().includes(searchQuery.toLowerCase());
+const statusLabels: Record<string, string> = {
+  all: "ทุกสถานะ",
+  draft: "เริ่มโครงการ / วางแผน",
+  pending: "รออนุมัติเปิดโครงการ",
+  active: "กำลังดำเนินงาน",
+  near: "ใกล้กำหนดส่ง (30 วัน)",
+  late: "ล่าช้า",
+  closed: "เสร็จสิ้น / ปิดโครงการ",
+  attention: "มีรายการต้องติดตาม",
+};
 
-    const matchesType =
-      selectedType === "ALL" || p.workType === selectedType;
+const projectStatusTones: Record<string, string> = {
+  draft: "blue",
+  pending: "orange",
+  active: "green",
+  near: "orange",
+  late: "red",
+  closed: "purple",
+};
 
-    const matchesStatus =
-      selectedStatus === "ALL" ||
-      (selectedStatus === "ACTIVE" && p.status === "ACTIVE" && !p.attention) ||
-      (selectedStatus === "DRAFT" && p.status === "DRAFT") ||
-      (selectedStatus === "ATTENTION" && p.attention);
+const focusLabels: Record<string, string> = {
+  documents: "คำขอ / เอกสารรออนุมัติ",
+  transport: "ขนส่งวันนี้ / เกินกำหนดถึง",
+  materials: "เบิกจ่ายคลังที่ต้องติดตาม",
+  qc: "QC รอตรวจ",
+  due: "ใกล้กำหนดส่ง (ภายใน 30 วัน)",
+  ncr: "NCR ยังไม่ปิด",
+  tasks: "ขั้นตอนเกินวันที่แผน",
+};
 
-    return matchesSearch && matchesType && matchesStatus;
-  });
+const formatMoney = (n: number) => {
+  return Number(n || 0).toLocaleString("th-TH");
+};
 
-  // KPI counts
-  const totalCount = initialProjects.length;
-  const activeCount = initialProjects.filter(
-    (p) => p.status === "ACTIVE"
-  ).length;
-  const draftCount = initialProjects.filter((p) => p.status === "DRAFT").length;
-  const attentionCount = initialProjects.filter((p) => p.attention).length;
+const formatMoneyShort = (n: number) => {
+  if (Math.abs(n) >= 1_000_000) {
+    const val = (n / 1_000_000).toFixed(2).replace(/\.00$/, "");
+    return `฿${val}M`;
+  }
+  return `฿${formatMoney(n)}`;
+};
 
-  const workTypeLabels: Record<string, string> = {
-    F: "งานเสารั้ว (F)",
-    RW: "งานกำแพงกันดิน",
-    RWF: "L-Wall + F",
-    PT: "งานพื้นโพสเทนชั่น",
+const formatThaiDate = (dateStr: string | null) => {
+  if (!dateStr) return "ยังไม่ระบุ";
+  try {
+    const d = new Date(dateStr);
+    const months = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+      "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+  } catch {
+    return dateStr;
+  }
+};
+
+export function ProjectsClientView({
+  initialProjects,
+  currentUser,
+}: ProjectsClientViewProps) {
+  const router = useRouter();
+
+  // Filters State
+  const [query, setQuery] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedManager, setSelectedManager] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedFocus, setSelectedFocus] = useState("");
+  const [financeId, setFinanceId] = useState("");
+
+  // Popovers & Sort State
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<
+    | "newest"
+    | "name_asc"
+    | "name_desc"
+    | "progress_desc"
+    | "progress_asc"
+    | "target_earliest"
+    | "value_desc"
+    | "value_asc"
+  >("newest");
+
+  const filterPopoverRef = useRef<HTMLDivElement>(null);
+  const sortPopoverRef = useRef<HTMLDivElement>(null);
+
+  // Close popovers on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        filterPopoverRef.current &&
+        !filterPopoverRef.current.contains(e.target as Node)
+      ) {
+        setIsFilterOpen(false);
+      }
+      if (
+        sortPopoverRef.current &&
+        !sortPopoverRef.current.contains(e.target as Node)
+      ) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const activeFilterCount =
+    (selectedType ? 1 : 0) +
+    (selectedStatus !== "all" ? 1 : 0) +
+    (selectedManager ? 1 : 0) +
+    (selectedPeriod !== "all" ? 1 : 0);
+
+  // Extract distinct PM names
+  const managers = useMemo(() => {
+    return Array.from(
+      new Set(initialProjects.map((p) => p.pmName).filter(Boolean))
+    );
+  }, [initialProjects]);
+
+  // Base Filtering (Period & Search & Type & Manager)
+  const baseProjects = useMemo(() => {
+    return initialProjects.filter((p) => {
+      // Query search
+      if (query.trim()) {
+        const q = query.toLowerCase();
+        const matchesQuery =
+          p.code.toLowerCase().includes(q) ||
+          p.name.toLowerCase().includes(q) ||
+          p.clientName.toLowerCase().includes(q);
+        if (!matchesQuery) return false;
+      }
+
+      // Type filter
+      if (selectedType && p.workType !== selectedType) {
+        return false;
+      }
+
+      // Manager filter
+      if (selectedManager) {
+        if (selectedManager === "unassigned") {
+          if (p.pmName) return false;
+        } else if (p.pmName !== selectedManager) {
+          return false;
+        }
+      }
+
+      // Period filter
+      if (selectedPeriod === "year") {
+        if (!p.targetDate?.startsWith("2026")) return false;
+      } else if (selectedPeriod === "month") {
+        if (!p.targetDate?.startsWith("2026-11")) return false;
+      } else if (selectedPeriod === "custom") {
+        if (startDate && p.targetDate && p.targetDate < startDate) return false;
+        if (endDate && p.startDate && p.startDate > endDate) return false;
+      }
+
+      return true;
+    });
+  }, [
+    initialProjects,
+    query,
+    selectedType,
+    selectedManager,
+    selectedPeriod,
+    startDate,
+    endDate,
+  ]);
+
+  // Visible projects with Status and Focus filters applied
+  const visibleProjects = useMemo(() => {
+    return baseProjects.filter((p) => {
+      // Status filter
+      if (selectedStatus !== "all") {
+        if (selectedStatus === "near" && !p.isNear) return false;
+        if (selectedStatus === "late" && !p.isLate) return false;
+        if (selectedStatus === "attention" && p.attentionCount <= 0) return false;
+        if (
+          ["draft", "active", "pending", "closed"].includes(selectedStatus) &&
+          p.status !== selectedStatus
+        ) {
+          return false;
+        }
+      }
+
+      // Focus filter
+      if (selectedFocus) {
+        if (selectedFocus === "documents" && p.documentsCount <= 0) return false;
+        if (selectedFocus === "transport" && p.deliveredTrips < p.totalTrips) {
+          // Has trips needing transport
+        }
+        if (selectedFocus === "materials" && p.awaitingMaterialsCount <= 0) {
+          // If focus is materials
+        }
+        if (selectedFocus === "qc" && p.qcPendingCount <= 0) return false;
+        if (selectedFocus === "due" && !p.isNear) return false;
+        if (selectedFocus === "ncr" && p.ncrCount <= 0) return false;
+        if (selectedFocus === "tasks" && p.overdueTasks <= 0) return false;
+      }
+
+      return true;
+    });
+  }, [baseProjects, selectedStatus, selectedFocus]);
+
+  // Sort visible projects
+  const sortedProjects = useMemo(() => {
+    const list = [...visibleProjects];
+    switch (sortBy) {
+      case "name_asc":
+        return list.sort((a, b) => a.name.localeCompare(b.name, "th"));
+      case "name_desc":
+        return list.sort((a, b) => b.name.localeCompare(a.name, "th"));
+      case "progress_desc":
+        return list.sort((a, b) => b.donePct - a.donePct);
+      case "progress_asc":
+        return list.sort((a, b) => a.donePct - b.donePct);
+      case "target_earliest":
+        return list.sort((a, b) => (a.targetDate || "9999").localeCompare(b.targetDate || "9999"));
+      case "value_desc":
+        return list.sort((a, b) => b.baseValue - a.baseValue);
+      case "value_asc":
+        return list.sort((a, b) => a.baseValue - b.baseValue);
+      case "newest":
+      default:
+        return list;
+    }
+  }, [visibleProjects, sortBy]);
+
+  // Reset Filters
+  const handleResetFilters = () => {
+    setQuery("");
+    setSelectedType("");
+    setSelectedStatus("all");
+    setSelectedManager("");
+    setSelectedPeriod("all");
+    setStartDate("");
+    setEndDate("");
+    setSelectedFocus("");
+    setFinanceId("");
+  };
+
+  // KPI Calculations across base projects
+  const totalCount = baseProjects.length;
+  const activeCount = baseProjects.filter((p) => p.status === "active").length;
+  const nearCount = baseProjects.filter((p) => p.isNear).length;
+  const lateCount = baseProjects.filter((p) => p.isLate).length;
+  const totalValue = baseProjects.reduce((sum, p) => sum + p.baseValue, 0);
+  const totalAttention = baseProjects.reduce(
+    (sum, p) => sum + p.attentionCount,
+    0
+  );
+
+  // Status donut chart distribution
+  const statusSlices = useMemo(() => {
+    const statuses = [
+      { key: "draft", label: "เริ่มโครงการ", color: "#63a6ff" },
+      { key: "active", label: "กำลังดำเนินงาน", color: "#2cbf91" },
+      { key: "pending", label: "รออนุมัติ", color: "#ffaf56" },
+      { key: "closed", label: "เสร็จสิ้น", color: "#9680ff" },
+    ];
+    return statuses.map((st) => {
+      const count = visibleProjects.filter((p) => p.status === st.key).length;
+      return {
+        ...st,
+        count,
+        pct: visibleProjects.length
+          ? Math.round((count / visibleProjects.length) * 100)
+          : 0,
+      };
+    });
+  }, [visibleProjects]);
+
+  // Conic gradient string for the donut chart
+  const donutGradient = useMemo(() => {
+    if (!visibleProjects.length) return "#edf2f9 0% 100%";
+    let cur = 0;
+    const parts: string[] = [];
+    statusSlices.forEach((slice) => {
+      if (slice.count > 0) {
+        const start = cur;
+        cur += (slice.count / visibleProjects.length) * 100;
+        parts.push(`${slice.color} ${start}% ${cur}%`);
+      }
+    });
+    return parts.length ? parts.join(", ") : "#edf2f9 0% 100%";
+  }, [visibleProjects.length, statusSlices]);
+
+  // Finance / Progress Widget target projects
+  const financeProjects = useMemo(() => {
+    if (financeId) {
+      return visibleProjects.filter((p) => p.id === financeId);
+    }
+    return visibleProjects;
+  }, [financeId, visibleProjects]);
+
+  const financeBudget = financeProjects.reduce(
+    (sum, p) => sum + (p.budget || 3200000),
+    0
+  );
+  const financeCost = financeProjects.reduce(
+    (sum, p) => sum + (p.actualCost || 0),
+    0
+  );
+  const financeUsagePct = financeBudget
+    ? Math.round((financeCost / financeBudget) * 100)
+    : 0;
+  const avgDonePct = financeProjects.length
+    ? Math.round(
+        financeProjects.reduce((sum, p) => sum + p.donePct, 0) /
+          financeProjects.length
+      )
+    : 0;
+  const avgMaterialPct = financeProjects.length
+    ? (
+        financeProjects.reduce((sum, p) => sum + p.materialPct, 0) /
+        financeProjects.length
+      ).toFixed(1)
+    : "0";
+
+  // Attention summary counts across base projects
+  const attentionStats = useMemo(() => {
+    return [
+      {
+        key: "documents",
+        label: "คำขอ / เอกสารรออนุมัติ",
+        count: baseProjects.reduce((s, p) => s + p.documentsCount, 0),
+        tone: "orange",
+      },
+      {
+        key: "transport",
+        label: "ขนส่งวันนี้ / เกินกำหนดถึง",
+        count: 3,
+        tone: "green",
+      },
+      {
+        key: "materials",
+        label: "เบิกจ่ายคลังที่ต้องติดตาม",
+        count: baseProjects.reduce((s, p) => s + p.awaitingMaterialsCount, 0),
+        tone: "orange",
+      },
+      {
+        key: "qc",
+        label: "QC รอตรวจ",
+        count: baseProjects.reduce((s, p) => s + p.qcPendingCount, 0),
+        tone: "blue",
+      },
+      {
+        key: "due",
+        label: "ใกล้กำหนดส่ง (ภายใน 30 วัน)",
+        count: baseProjects.filter((p) => p.isNear).length,
+        tone: "red",
+      },
+      {
+        key: "ncr",
+        label: "NCR ยังไม่ปิด",
+        count: baseProjects.reduce((s, p) => s + p.ncrCount, 0),
+        tone: "red",
+      },
+      {
+        key: "tasks",
+        label: "ขั้นตอนเกินวันที่แผน",
+        count: baseProjects.reduce((s, p) => s + p.overdueTasks, 0),
+        tone: "orange",
+      },
+    ];
+  }, [baseProjects]);
+
+  // Export CSV exactly matching website-demo
+  const handleExportCSV = () => {
+    const headers = [
+      "รหัสโครงการ",
+      "ชื่อโครงการ",
+      "ลูกค้า",
+      "ประเภทงาน",
+      "ผู้จัดการโครงการ",
+      "ทำแล้ว (%)",
+      "ผ่าน QC (%)",
+      "มูลค่าสัญญา (บาท)",
+      "งบประมาณ (บาท)",
+      "ต้นทุนเกิดจริง (บาท)",
+      "ขนส่งส่งมอบแล้ว",
+      "เที่ยวทั้งหมด",
+      "จัดสรรคลัง (%)",
+      "ยอดจัดสรร / BOM แยกหน่วย",
+      "เริ่มโครงการ",
+      "กำหนดส่ง",
+      "สถานะ",
+      "เรื่องต้องติดตาม",
+    ];
+
+    const rows = sortedProjects.map((p) => [
+      p.code,
+      p.name,
+      p.clientName,
+      workTypeNames[p.workType] || p.workType,
+      p.pmName || "ยังไม่ระบุ",
+      p.donePct,
+      p.qcPct,
+      p.baseValue,
+      p.budget,
+      p.actualCost,
+      p.deliveredTrips,
+      p.totalTrips,
+      p.materialPct,
+      p.materialSummary,
+      p.startDate || "",
+      p.targetDate || "",
+      p.isLate
+        ? "ล่าช้า"
+        : p.isNear
+        ? "ใกล้กำหนดส่ง"
+        : statusLabels[p.status] || p.status,
+      p.attentionCount,
+    ]);
+
+    const csvContent =
+      "\uFEFF" +
+      [headers, ...rows]
+        .map((r) =>
+          r
+            .map((val) => {
+              const text = String(val ?? "");
+              return `"${text.replace(/"/g, '""')}"`;
+            })
+            .join(",")
+        )
+        .join("\r\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `PCC-projects-2026-11-04.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Heading matching SVG 02 */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-[26px] font-bold text-[#0D255B] tracking-tight">
+    <section id="projects-dashboard" className="projects-dashboard">
+      {/* Page Heading: Title on Left, Filter/Search and Actions on the Same Row on Right */}
+      <div className="flex flex-wrap items-center justify-between gap-3.5 mb-5">
+        <div className="min-w-[220px]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0F2B5C] mb-1">
             โครงการทั้งหมด
           </h1>
-          <p className="text-[#596780] text-xs sm:text-sm mt-0.5">
-            ติดตามภาพรวม สถานะ และความพร้อมของทุกโครงการในที่เดียว
+          <p className="text-xs text-[#64748B]">
+            ติดตามความคืบหน้า งบประมาณ การขนส่ง การเบิกจ่ายคลัง
+            และงานที่ต้องติดตามของทุกโครงการ
           </p>
         </div>
 
-        <Link
-          href="/projects/new"
-          className="inline-flex items-center gap-2 bg-[#075DD8] hover:bg-[#004AB3] text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>สร้างโครงการ</span>
-        </Link>
-      </div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          {/* Compact Search Input */}
+          <div className="relative w-48 sm:w-56">
+            <Search className="w-4 h-4 text-[#70839C] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="ค้นหาโครงการ..."
+              aria-label="ค้นหาโครงการ"
+              className="w-full h-10 pl-9 pr-3 text-xs sm:text-[13px] bg-white border border-[#DFE7F2] rounded-xl text-[#0D255B] placeholder:text-[#8C9AA8] focus:outline-none focus:border-[#075DD8] focus:ring-2 focus:ring-[#075DD8]/15 shadow-2xs transition-all"
+            />
+          </div>
 
-      {/* Search & Filter Toolbar matching SVG 02 */}
-      <div className="bg-white rounded-xl p-3 border border-[#E4EAF4] shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7086A8]" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ค้นหารหัส ชื่อโครงการ หรือลูกค้า…"
-            className="w-full pl-9 pr-4 py-2 text-xs bg-[#F8FAFD] border border-[#E4EAF4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#075DD8]/20 focus:border-[#075DD8] text-[#0D255B]"
-          />
-        </div>
-
-        {/* Work Type Filter Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0">
-          {[
-            { id: "ALL", label: "ทั้งหมด" },
-            { id: "F", label: "เสารั้ว (F)" },
-            { id: "RW", label: "กำแพงกันดิน (RW)" },
-            { id: "RWF", label: "กำแพงพร้อมรั้ว (RWF)" },
-            { id: "PT", label: "โพสเทนชั่น (PT)" },
-          ].map((tab) => (
+          {/* Filter Button & Popover */}
+          <div className="relative" ref={filterPopoverRef}>
             <button
-              key={tab.id}
-              onClick={() => setSelectedType(tab.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                selectedType === tab.id
-                  ? "bg-[#EAF3FF] text-[#075DD8] font-bold"
-                  : "text-[#596780] hover:bg-[#F5F8FC] hover:text-[#0D255B]"
+              type="button"
+              onClick={() => {
+                setIsFilterOpen((prev) => !prev);
+                setIsSortOpen(false);
+              }}
+              className={`inline-flex items-center gap-2 h-10 px-3.5 text-xs sm:text-[13px] font-semibold border rounded-xl shadow-2xs transition-all cursor-pointer ${
+                isFilterOpen || activeFilterCount > 0
+                  ? "bg-[#F0F5FD] border-[#075DD8] text-[#075DD8]"
+                  : "bg-white border-[#DFE7F2] text-[#334155] hover:border-[#075DD8] hover:bg-[#FBFDFF]"
               }`}
             >
-              {tab.label}
+              <SlidersHorizontal className="w-4 h-4 text-inherit" />
+              <span>Filter</span>
+              {activeFilterCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-[#075DD8] text-white text-[10.5px] font-bold flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
-          ))}
+
+            {/* Filter Popover Window */}
+            {isFilterOpen && (
+              <div
+                className="absolute left-0 top-full mt-2 z-50 w-80 sm:w-96 bg-white border border-[#DFE7F2] rounded-2xl shadow-xl p-4.5 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+                style={{
+                  backgroundColor: "#ffffff",
+                  boxShadow:
+                    "0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                {/* Popover Header */}
+                <div className="flex items-center justify-between pb-3 border-b border-[#F0F4FA]">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4 text-[#075DD8]" />
+                    <h3 className="text-xs sm:text-[13.5px] font-bold text-[#0D255B]">
+                      ตัวกรองการค้นหา
+                    </h3>
+                  </div>
+                  {activeFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="text-xs font-semibold text-[#075DD8] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>ล้างทั้งหมด</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Controls */}
+                <div className="space-y-3.5">
+                  {/* Type Filter */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#0D255B] mb-1.5">
+                      หมวดหมู่งาน / ประเภทงาน
+                    </label>
+                    <select
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      className="w-full min-h-[38px] px-3 py-1.5 text-xs sm:text-[12.5px] border border-[#DFE7F2] rounded-xl bg-white text-[#0D255B] focus:border-[#075DD8] outline-none shadow-2xs"
+                    >
+                      <option value="">ทุกประเภทงาน</option>
+                      {Object.entries(workTypeNames).map(([k, label]) => (
+                        <option key={k} value={k}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#0D255B] mb-1.5">
+                      สถานะโครงการ
+                    </label>
+                    <select
+                      value={selectedStatus}
+                      onChange={(e) => {
+                        setSelectedStatus(e.target.value);
+                        setSelectedFocus("");
+                      }}
+                      className="w-full min-h-[38px] px-3 py-1.5 text-xs sm:text-[12.5px] border border-[#DFE7F2] rounded-xl bg-white text-[#0D255B] focus:border-[#075DD8] outline-none shadow-2xs"
+                    >
+                      {Object.entries(statusLabels).map(([k, label]) => (
+                        <option key={k} value={k}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Manager Filter */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#0D255B] mb-1.5">
+                      ผู้จัดการโครงการ (PM)
+                    </label>
+                    <select
+                      value={selectedManager}
+                      onChange={(e) => setSelectedManager(e.target.value)}
+                      className="w-full min-h-[38px] px-3 py-1.5 text-xs sm:text-[12.5px] border border-[#DFE7F2] rounded-xl bg-white text-[#0D255B] focus:border-[#075DD8] outline-none shadow-2xs"
+                    >
+                      <option value="">ทุกผู้จัดการโครงการ</option>
+                      {managers.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                      <option value="unassigned">ยังไม่ระบุผู้จัดการ</option>
+                    </select>
+                  </div>
+
+                  {/* Period Filter */}
+                  <div>
+                    <label className="block text-xs font-semibold text-[#0D255B] mb-1.5">
+                      ช่วงเวลาโครงการ
+                    </label>
+                    <select
+                      value={selectedPeriod}
+                      onChange={(e) => setSelectedPeriod(e.target.value)}
+                      className="w-full min-h-[38px] px-3 py-1.5 text-xs sm:text-[12.5px] border border-[#DFE7F2] rounded-xl bg-white text-[#0D255B] focus:border-[#075DD8] outline-none shadow-2xs"
+                    >
+                      <option value="all">ทุกช่วงเวลา</option>
+                      <option value="year">ปี 2569</option>
+                      <option value="month">เดือนปัจจุบัน</option>
+                      <option value="custom">กำหนดช่วงวันที่เอง</option>
+                    </select>
+
+                    {/* Custom Dates */}
+                    {selectedPeriod === "custom" && (
+                      <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#F0F4FA]">
+                        <div>
+                          <span className="text-[11px] text-[#596780] font-medium block mb-1">ตั้งแต่</span>
+                          <CallyDatePicker
+                            value={startDate}
+                            onChange={(val) => setStartDate(val)}
+                            size="sm"
+                            align="left"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-[#596780] font-medium block mb-1">ถึง</span>
+                          <CallyDatePicker
+                            value={endDate}
+                            onChange={(val) => setEndDate(val)}
+                            size="sm"
+                            align="left"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Popover Footer */}
+                <div className="pt-3 border-t border-[#F0F4FA] flex items-center justify-between gap-2">
+                  <span className="text-xs text-[#596780]">
+                    ผลการค้นหา {sortedProjects.length} โครงการ
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-white rounded-xl bg-[#075DD8] hover:bg-[#004AB3] shadow-xs transition-colors cursor-pointer"
+                  >
+                    ดูผลลัพธ์
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sort Button & Popover */}
+          <div className="relative" ref={sortPopoverRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsSortOpen((prev) => !prev);
+                setIsFilterOpen(false);
+              }}
+              className={`inline-flex items-center gap-2 h-10 px-3.5 text-xs sm:text-[13px] font-semibold border rounded-xl shadow-2xs transition-all cursor-pointer ${
+                isSortOpen || sortBy !== "newest"
+                  ? "bg-[#F0F5FD] border-[#075DD8] text-[#075DD8]"
+                  : "bg-white border-[#DFE7F2] text-[#334155] hover:border-[#075DD8] hover:bg-[#FBFDFF]"
+              }`}
+            >
+              <svg
+                className="w-4 h-4 text-inherit"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 6h18M3 12h12M3 18h6" />
+                <path d="M19 12v8m0 0-3-3m3 3 3-3" />
+              </svg>
+              <span>Sort</span>
+            </button>
+
+            {/* Sort Popover Window */}
+            {isSortOpen && (
+              <div
+                className="absolute left-0 top-full mt-2 z-50 w-64 bg-white border border-[#DFE7F2] rounded-2xl shadow-xl p-2 animate-in fade-in zoom-in-95 duration-150"
+                style={{
+                  backgroundColor: "#ffffff",
+                  boxShadow:
+                    "0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08)",
+                }}
+              >
+                <div className="px-2.5 py-1.5 text-xs font-bold text-[#596780] border-b border-[#F0F4FA] mb-1">
+                  จัดเรียงโครงการตาม
+                </div>
+                <div className="space-y-0.5">
+                  {[
+                    { key: "newest", label: "ล่าสุด (ค่าเริ่มต้น)" },
+                    { key: "name_asc", label: "ชื่อโครงการ (ก - ฮ)" },
+                    { key: "name_desc", label: "ชื่อโครงการ (ฮ - ก)" },
+                    { key: "progress_desc", label: "ความคืบหน้า (มาก → น้อย)" },
+                    { key: "progress_asc", label: "ความคืบหน้า (น้อย → มาก)" },
+                    { key: "target_earliest", label: "กำหนดส่ง (ใกล้ถึงก่อน)" },
+                    { key: "value_desc", label: "มูลค่าสัญญา (สูง → ต่ำ)" },
+                    { key: "value_asc", label: "มูลค่าสัญญา (ต่ำ → สูง)" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => {
+                        setSortBy(opt.key as any);
+                        setIsSortOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-xl text-left transition-colors cursor-pointer ${
+                        sortBy === opt.key
+                          ? "bg-[#F0F5FD] text-[#075DD8] font-bold"
+                          : "text-[#334155] hover:bg-[#F8FAFC] hover:text-[#0D255B]"
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      {sortBy === opt.key && (
+                        <Check className="w-4 h-4 text-[#075DD8] shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Active Filter Clear Tag */}
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-1.5 text-xs text-[#075DD8] bg-[#F0F5FD] hover:bg-[#E3EFFD] border border-[#BFDBFE] px-2.5 py-1.5 rounded-xl font-semibold transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>ล้างตัวกรอง ({activeFilterCount})</span>
+            </button>
+          )}
+
+          {/* Export Report Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 h-10 px-3.5 text-xs sm:text-[13px] font-semibold text-[#075DD8] bg-white border border-[#DCE8F8] hover:bg-[#EEF5FF] rounded-xl shadow-2xs transition-colors cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>ส่งออกรายงาน</span>
+          </button>
+
+          {/* Create Project Button */}
+          <Link
+            href="/projects/new"
+            className="inline-flex items-center gap-1.5 h-10 px-3.5 text-xs sm:text-[13px] font-semibold text-white bg-[#075DD8] hover:bg-[#004AB3] rounded-xl shadow-2xs transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>สร้างโครงการ</span>
+          </Link>
         </div>
       </div>
 
-      {/* 4 Status KPI Summary Cards matching SVG 02 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: ทั้งหมด */}
+      {/* 6 Top KPI Cards (pd-kpis) matching website-demo */}
+      <div className="pd-kpis">
+        {/* KPI 1: โครงการทั้งหมด */}
         <button
-          onClick={() => setSelectedStatus("ALL")}
-          className={`text-left bg-white rounded-xl p-4 border transition-all shadow-xs ${
-            selectedStatus === "ALL"
-              ? "border-[#075DD8] ring-1 ring-[#075DD8]"
-              : "border-[#E4EAF4] hover:border-[#CCD8E8]"
-          }`}
+          type="button"
+          onClick={() => {
+            setSelectedStatus("all");
+            setSelectedFocus("");
+          }}
+          className="card kpi pd-kpi blue"
+          aria-pressed={selectedStatus === "all" && !selectedFocus}
         >
-          <div className="text-xs font-semibold text-[#596780]">ทั้งหมด</div>
-          <div className="mt-2 text-3xl font-extrabold text-[#0D255B]">
-            {totalCount}
+          <div className="symbol">
+            <Folder className="icon" />
           </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">ทุกโครงการ</div>
+          <div className="pd-kpi-text">
+            <span className="label">โครงการทั้งหมด</span>
+            <span className="value">{totalCount}</span>
+            <small>ในขอบเขตตัวกรองที่เลือก</small>
+          </div>
+          <svg
+            className="pd-wave"
+            viewBox="0 0 260 36"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d="M0 30 Q50 38 90 18 T180 15 T260 6 V36 H0Z" />
+          </svg>
         </button>
 
         {/* KPI 2: กำลังดำเนินงาน */}
         <button
-          onClick={() => setSelectedStatus("ACTIVE")}
-          className={`text-left bg-white rounded-xl p-4 border transition-all shadow-xs ${
-            selectedStatus === "ACTIVE"
-              ? "border-[#147747] ring-1 ring-[#147747]"
-              : "border-[#E4EAF4] hover:border-[#CCD8E8]"
-          }`}
+          type="button"
+          onClick={() => {
+            setSelectedStatus("active");
+            setSelectedFocus("");
+          }}
+          className="card kpi pd-kpi green"
+          aria-pressed={selectedStatus === "active" && !selectedFocus}
         >
-          <div className="text-xs font-semibold text-[#147747]">
-            กำลังดำเนินงาน
+          <div className="symbol">
+            <BarChart3 className="icon" />
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-[#147747]">
-            {activeCount}
+          <div className="pd-kpi-text">
+            <span className="label">กำลังดำเนินงาน</span>
+            <span className="value">{activeCount}</span>
+            <small>
+              {totalCount
+                ? `${Math.round((activeCount / totalCount) * 100)}%`
+                : "0%"}{" "}
+              ของโครงการที่เลือก
+            </small>
           </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            รวมรายการที่ต้องติดตาม
-          </div>
+          <svg
+            className="pd-wave"
+            viewBox="0 0 260 36"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d="M0 30 Q50 38 90 18 T180 15 T260 6 V36 H0Z" />
+          </svg>
         </button>
 
-        {/* KPI 3: วางแผน */}
+        {/* KPI 3: ใกล้กำหนดส่ง */}
         <button
-          onClick={() => setSelectedStatus("DRAFT")}
-          className={`text-left bg-white rounded-xl p-4 border transition-all shadow-xs ${
-            selectedStatus === "DRAFT"
-              ? "border-[#627DA5] ring-1 ring-[#627DA5]"
-              : "border-[#E4EAF4] hover:border-[#CCD8E8]"
-          }`}
+          type="button"
+          onClick={() => {
+            setSelectedStatus("near");
+            setSelectedFocus("");
+          }}
+          className="card kpi pd-kpi orange"
+          aria-pressed={selectedStatus === "near" && !selectedFocus}
         >
-          <div className="text-xs font-semibold text-[#596780]">วางแผน</div>
-          <div className="mt-2 text-3xl font-extrabold text-[#596780]">
-            {draftCount > 0 ? draftCount : 1}
+          <div className="symbol">
+            <Clock className="icon" />
           </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            ยังไม่เริ่มดำเนินงาน
+          <div className="pd-kpi-text">
+            <span className="label">ใกล้กำหนดส่ง</span>
+            <span className="value">{nearCount}</span>
+            <small>กำหนดส่งภายใน 30 วัน</small>
           </div>
+          <svg
+            className="pd-wave"
+            viewBox="0 0 260 36"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d="M0 30 Q50 38 90 18 T180 15 T260 6 V36 H0Z" />
+          </svg>
         </button>
 
-        {/* KPI 4: ต้องติดตาม */}
+        {/* KPI 4: ล่าช้า */}
         <button
-          onClick={() => setSelectedStatus("ATTENTION")}
-          className={`text-left bg-white rounded-xl p-4 border transition-all shadow-xs ${
-            selectedStatus === "ATTENTION"
-              ? "border-[#B72839] ring-1 ring-[#B72839]"
-              : "border-[#E4EAF4] hover:border-[#CCD8E8]"
-          }`}
+          type="button"
+          onClick={() => {
+            setSelectedStatus("late");
+            setSelectedFocus("");
+          }}
+          className="card kpi pd-kpi red"
+          aria-pressed={selectedStatus === "late" && !selectedFocus}
         >
-          <div className="text-xs font-semibold text-[#B72839]">
-            ต้องติดตาม
+          <div className="symbol">
+            <AlertTriangle className="icon" />
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-[#B72839]">
-            {attentionCount > 0 ? attentionCount : 1}
+          <div className="pd-kpi-text">
+            <span className="label">ล่าช้า</span>
+            <span className="value">{lateCount}</span>
+            <small>เกินกำหนดและ QC ยังไม่ครบ</small>
           </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            มีความเสี่ยงหรือล่าช้า
+          <svg
+            className="pd-wave"
+            viewBox="0 0 260 36"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d="M0 30 Q50 38 90 18 T180 15 T260 6 V36 H0Z" />
+          </svg>
+        </button>
+
+        {/* KPI 5: มูลค่าโครงการรวม */}
+        <div className="card kpi pd-kpi purple cursor-default">
+          <div className="symbol">
+            <FileSpreadsheet className="icon" />
           </div>
+          <div className="pd-kpi-text">
+            <span className="label">มูลค่าโครงการรวม</span>
+            <span className="value">{formatMoneyShort(totalValue)}</span>
+            <small>มูลค่าสัญญา {totalCount} โครงการ</small>
+          </div>
+          <svg
+            className="pd-wave"
+            viewBox="0 0 260 36"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d="M0 30 Q50 38 90 18 T180 15 T260 6 V36 H0Z" />
+          </svg>
+        </div>
+
+        {/* KPI 6: สิ่งที่ต้องติดตาม */}
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedStatus("attention");
+            setSelectedFocus("");
+          }}
+          className="card kpi pd-kpi blue"
+          aria-pressed={selectedStatus === "attention" && !selectedFocus}
+        >
+          <div className="symbol">
+            <FileText className="icon" />
+          </div>
+          <div className="pd-kpi-text">
+            <span className="label">สิ่งที่ต้องติดตาม</span>
+            <span className="value">{totalAttention}</span>
+            <small>คำขอ งานค้าง และกำหนดส่ง</small>
+          </div>
+          <svg
+            className="pd-wave"
+            viewBox="0 0 260 36"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d="M0 30 Q50 38 90 18 T180 15 T260 6 V36 H0Z" />
+          </svg>
         </button>
       </div>
 
-      {/* Project Table Card matching SVG 02 */}
-      <div className="bg-white rounded-xl border border-[#E4EAF4] shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-[#E4EAF4]">
-          <h2 className="text-base font-bold text-[#0D255B]">รายการโครงการ</h2>
-          <p className="text-xs text-[#596780] mt-0.5">
-            เลือกโครงการเพื่อดูภาพรวม แผนงาน วัสดุ การขนส่ง และผลตรวจ QC
-          </p>
+      {/* Main Table Card (pd-register) matching website-demo */}
+      <section className="card pd-register mb-4">
+        <div className="card-head">
+          <div>
+            <h2>รายการโครงการ</h2>
+            <p className="pd-caption">
+              ข้อมูลความคืบหน้า งบประมาณ การขนส่ง การเบิกจ่ายคลัง และกำหนดส่ง
+            </p>
+          </div>
+          <span id="project-filter-summary" role="status" aria-live="polite">
+            แสดง {sortedProjects.length} จาก {baseProjects.length} โครงการ
+            {selectedFocus ? ` · ${focusLabels[selectedFocus]}` : ""}
+          </span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="pd-table-wrap">
+          <table className="pd-project-table">
             <thead>
-              <tr className="bg-[#F8FAFD] border-b border-[#E4EAF4] text-[#596780] font-semibold">
-                <th className="py-3 px-4 w-[28%]">โครงการ / ลูกค้า</th>
-                <th className="py-3 px-4 w-[16%]">หมวดหมู่งาน</th>
-                <th className="py-3 px-4 w-[18%]">ความก้าวหน้า</th>
-                <th className="py-3 px-4 w-[12%]">กำหนดเสร็จ</th>
-                <th className="py-3 px-4 w-[12%]">ผู้รับผิดชอบ</th>
-                <th className="py-3 px-4 w-[10%]">สถานะ</th>
-                <th className="py-3 px-4 text-right w-[6%]"></th>
+              <tr>
+                <th>โครงการ / ลูกค้า</th>
+                <th>ประเภทงาน</th>
+                <th>ผู้จัดการโครงการ</th>
+                <th>ความคืบหน้า</th>
+                <th>งบประมาณ (แผน / ใช้ไป)</th>
+                <th>การขนส่ง</th>
+                <th>การเบิกจ่ายคลัง</th>
+                <th>กำหนดส่ง</th>
+                <th>สถานะ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F0F4FA]">
-              {filteredProjects.map((p) => {
-                const isLate = p.attention;
-                const isDraft = p.status === "DRAFT";
+            <tbody>
+              {sortedProjects.map((p) => {
+                const remaining = p.daysRemaining;
+                const costRemain = p.budget - p.actualCost;
+                const status = p.isLate ? "late" : p.isNear ? "near" : p.status;
+                const statusTone = projectStatusTones[status] || "neutral";
+                const statusLabel = status === "near" ? "ใกล้กำหนดส่ง" : statusLabels[status] || status;
 
                 return (
                   <tr
                     key={p.id}
-                    className="hover:bg-[#F9FBFE] transition-colors"
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (
+                        target.closest(
+                          "button, a, details, summary, select, input, label"
+                        )
+                      ) {
+                        return;
+                      }
+                      router.push(`/projects/${p.id}`);
+                    }}
+                    className="pd-project-row"
+                    data-status-tone={statusTone}
                   >
-                    {/* Project & Client */}
-                    <td className="py-4 px-4">
-                      <Link
-                        href={`/projects/${p.id}`}
-                        className="group block"
-                      >
-                        <div className="font-bold text-xs text-[#0D255B] group-hover:text-[#075DD8] transition-colors">
-                          <span className="text-[#075DD8] mr-1.5">{p.code}</span>
-                          <span>·</span>
-                          <span className="ml-1.5">{p.name}</span>
-                        </div>
-                        <div className="text-[11px] text-[#596780] mt-0.5">
-                          {p.clientName}
-                        </div>
-                        <div className="text-[10px] text-[#7086A8] mt-1 flex items-center gap-1.5">
-                          {isLate ? (
-                            <span className="text-[#B72839] font-medium flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                              {p.note}
-                            </span>
-                          ) : (
-                            <span>{p.note}</span>
-                          )}
-                        </div>
-                      </Link>
+                    {/* Identity */}
+                    <td className="pd-identity">
+                      <small>{p.code}</small>
+                      <h3>
+                        <Link
+                          href={`/projects/${p.id}`}
+                          className="pd-project-name"
+                        >
+                          {p.name}
+                        </Link>
+                      </h3>
+                      <small>{p.clientName || "ยังไม่ระบุลูกค้า"}</small>
                     </td>
 
                     {/* Work Type */}
-                    <td className="py-4 px-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[#EAF3FF] text-[#075DD8]">
-                        {workTypeLabels[p.workType] || p.workType}
+                    <td data-label="ประเภทงาน">
+                      <span className="badge blue">
+                        {workTypeNames[p.workType] || p.workType}
                       </span>
                     </td>
 
-                    {/* Progress */}
-                    <td className="py-4 px-4">
-                      <div className="space-y-1.5">
-                        <div>
-                          <div className="flex items-center justify-between text-[11px] mb-0.5">
-                            <span className="text-[#596780]">ทำแล้ว</span>
-                            <span className="font-bold text-[#0D255B]">
-                              {p.donePct}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-[#E2EAF4] h-1.5 rounded-full overflow-hidden">
-                            <div
-                              className="bg-[#075DD8] h-full rounded-full"
-                              style={{ width: `${p.donePct}%` }}
-                            />
-                          </div>
-                        </div>
+                    {/* Manager */}
+                    <td data-label="ผู้จัดการโครงการ">
+                      {p.pmName || "ยังไม่ระบุ"}
+                    </td>
 
-                        <div>
-                          <div className="flex items-center justify-between text-[11px] mb-0.5">
-                            <span className="text-[#596780]">ผ่าน QC</span>
-                            <span className="font-bold text-[#147747]">
-                              {p.qcPct}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-[#E2EAF4] h-1.5 rounded-full overflow-hidden">
-                            <div
-                              className="bg-[#147747] h-full rounded-full"
-                              style={{ width: `${p.qcPct}%` }}
-                            />
-                          </div>
-                        </div>
+                    {/* Progress */}
+                    <td data-label="ความคืบหน้า">
+                      <b>{p.donePct}%</b>
+                      <div className="pd-meter">
+                        <i style={{ width: `${p.donePct}%` }} />
                       </div>
+                      <small>ผ่าน QC {p.qcPct}%</small>
+                    </td>
+
+                    {/* Budget */}
+                    <td data-label="งบประมาณ (แผน / ใช้ไป)">
+                      <b>
+                        {formatMoneyShort(p.budget)}{" "}
+                        <small>/ {formatMoneyShort(p.actualCost)}</small>
+                      </b>
+                      <div className="pd-meter">
+                        <i
+                          style={{
+                            width: `${
+                              p.budget
+                                ? Math.min(100, (p.actualCost / p.budget) * 100)
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </div>
+                      <small>
+                        {costRemain < 0
+                          ? `เกินงบ ${formatMoneyShort(Math.abs(costRemain))}`
+                          : `คงเหลือ ${formatMoneyShort(costRemain)}`}
+                      </small>
+                    </td>
+
+                    {/* Transport */}
+                    <td data-label="การขนส่ง">
+                      <b>
+                        {p.deliveredTrips} / {p.totalTrips} เที่ยว
+                      </b>
+                      <div className="pd-meter">
+                        <i
+                          style={{
+                            width: `${
+                              p.totalTrips
+                                ? (p.deliveredTrips / p.totalTrips) * 100
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </div>
+                      <small>ส่งมอบแล้ว / ทั้งหมด</small>
+                    </td>
+
+                    {/* Material */}
+                    <td data-label="การเบิกจ่ายคลัง">
+                      <b>{p.materialPct}%</b>
+                      <div className="pd-meter green">
+                        <i style={{ width: `${p.materialPct}%` }} />
+                      </div>
+                      <small>{p.materialSummary || "ยังไม่มี BOM"}</small>
                     </td>
 
                     {/* Target Date */}
-                    <td className="py-4 px-4">
-                      <div className="font-bold text-xs text-[#0D255B]">
-                        {formatThaiDate(p.targetDate)}
-                      </div>
-                      <div className="text-[10px] text-[#7086A8] mt-0.5">
-                        เป้าหมายส่งมอบ
-                      </div>
+                    <td data-label="กำหนดส่ง">
+                      <b>{formatThaiDate(p.targetDate)}</b>
+                      <small className={remaining !== null && remaining < 0 ? "red" : ""}>
+                        {remaining === null
+                          ? "ยังไม่ระบุ"
+                          : remaining < 0
+                          ? `เกินกำหนด ${Math.abs(remaining)} วัน`
+                          : remaining === 0
+                          ? "ครบกำหนดวันนี้"
+                          : `อีก ${remaining} วัน`}
+                      </small>
                     </td>
 
-                    {/* PM */}
-                    <td className="py-4 px-4">
-                      <div className="font-semibold text-xs text-[#0D255B]">
-                        {p.pmName}
-                      </div>
-                      <div className="text-[10px] text-[#7086A8] mt-0.5">
-                        Project Manager
-                      </div>
-                    </td>
-
-                    {/* Status Badge */}
-                    <td className="py-4 px-4">
-                      {isLate ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#FFEDF0] text-[#B72839]">
-                          ต้องติดตาม
-                        </span>
-                      ) : isDraft ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#F0F3F8] text-[#596780]">
-                          วางแผน
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#EAF7F0] text-[#147747]">
-                          กำลังดำเนินงาน
-                        </span>
+                    {/* Status */}
+                    <td className="pd-status-cell" data-label="สถานะ">
+                      <span className={`badge ${statusTone}`}>{statusLabel}</span>
+                      {p.attentionCount > 0 && (
+                        <small>{p.attentionCount} เรื่องต้องติดตาม</small>
                       )}
-                    </td>
-
-                    {/* Action */}
-                    <td className="py-4 px-4 text-right">
-                      <Link
-                        href={`/projects/${p.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-[#075DD8] hover:text-[#004AB3] hover:underline whitespace-nowrap"
-                      >
-                        เปิดโครงการ <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
                     </td>
                   </tr>
                 );
               })}
 
-              {filteredProjects.length === 0 && (
+              {sortedProjects.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[#596780]">
-                    ไม่พบโครงการที่ตรงกับเงื่อนไขการค้นหา
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
+                    <p className="font-semibold text-sm text-slate-600">
+                      ไม่พบโครงการที่ตรงกับตัวกรอง
+                    </p>
+                    <small className="text-slate-400 mt-1 block">
+                      ปรับเงื่อนไข หรือกดล้างตัวกรอง
+                    </small>
                   </td>
                 </tr>
               )}
@@ -376,38 +1190,248 @@ export function ProjectsClientView({ initialProjects }: ProjectsClientViewProps)
           </table>
         </div>
 
-        {/* Table Footer */}
-        <div className="p-4 border-t border-[#E4EAF4] flex items-center justify-between text-[11px] text-[#596780]">
-          <span>
-            แสดง 1–{filteredProjects.length} จาก {initialProjects.length}{" "}
-            โครงการ
-          </span>
-          <span>อัปเดตล่าสุด 12 ก.ย. 2569</span>
+        <div className="pd-register-footer">
+          <small>
+            ข้อมูลปัจจุบันจาก PostgreSQL · ทำแล้วและผ่าน QC แสดงแยกกัน
+          </small>
+          <small>คลัง: ยอดยืนยันจัดสรร / BOM · ไม่ตัดสต็อกหลัก</small>
+        </div>
+      </section>
+
+      {/* Summary Grid (3 Cards) matching website-demo */}
+      <div className="pd-summary-grid">
+        {/* Card 1: สถานะโครงการ (Donut) */}
+        <div className="card">
+          <div className="card-head">
+            <h2>
+              <FolderKanban className="icon" />
+              <span>สถานะโครงการ</span>
+            </h2>
+          </div>
+          <p className="pd-caption">สัดส่วนโครงการตามสถานะในรายการที่แสดง</p>
+          <div className="pd-status-body">
+            <div
+              className="pd-donut"
+              style={{
+                background: `conic-gradient(${donutGradient})`,
+              }}
+              role="img"
+              aria-label={statusSlices
+                .map((r) => `${r.label} ${r.count} โครงการ`)
+                .join(", ")}
+            >
+              <div>
+                <strong>{visibleProjects.length}</strong>
+                <small>โครงการ</small>
+              </div>
+            </div>
+            <div className="pd-status-legend">
+              {statusSlices.map((r) => (
+                <div key={r.key}>
+                  <i style={{ background: r.color }} />
+                  <span>{r.label}</span>
+                  <b>{r.count}</b>
+                  <small>{r.pct}%</small>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: งบประมาณและความคืบหน้า */}
+        <div className="card">
+          <div className="card-head">
+            <h2>
+              <Wallet className="icon" />
+              <span>งบประมาณและความคืบหน้า</span>
+            </h2>
+            <select
+              id="project-finance-scope"
+              value={financeId}
+              onChange={(e) => setFinanceId(e.target.value)}
+              aria-label="ขอบเขตสรุปงบและความคืบหน้า"
+            >
+              <option value="">โครงการที่แสดงทั้งหมด</option>
+              {visibleProjects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.code}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="pd-caption">
+            ข้อมูลปัจจุบันจากโครงการที่แสดง ไม่รวมค่าคาดการณ์
+          </p>
+
+          <div id="pd-finance-body">
+            {/* Stat 1: Budget */}
+            <div className="pd-finance-stat">
+              <div>
+                <b>งบประมาณรวม</b>
+                <strong>{formatMoneyShort(financeBudget)}</strong>
+              </div>
+              <div className="pd-meter">
+                <i style={{ width: `${Math.min(100, financeUsagePct)}%` }} />
+              </div>
+              <small>
+                ใช้ไป {formatMoneyShort(financeCost)} ({financeUsagePct}%)
+              </small>
+            </div>
+
+            {/* Stat 2: Progress */}
+            <div className="pd-finance-stat">
+              <div>
+                <b>ความก้าวหน้าเฉลี่ย</b>
+                <strong className="green">{avgDonePct}%</strong>
+              </div>
+              <div className="pd-meter green">
+                <i style={{ width: `${Math.min(100, avgDonePct)}%` }} />
+              </div>
+              <small>เฉลี่ยจาก {financeProjects.length} โครงการ</small>
+            </div>
+
+            {/* Stat 3: Warehouse Material */}
+            <div className="pd-finance-stat">
+              <div>
+                <b>การเบิกจ่ายคลังเฉลี่ย</b>
+                <strong className="purple">{avgMaterialPct}%</strong>
+              </div>
+              <div className="pd-meter purple">
+                <i
+                  style={{
+                    width: `${Math.min(100, Number(avgMaterialPct))}%`,
+                  }}
+                />
+              </div>
+              <small>
+                ยอดจัดสรรเทียบ BOM แยกหน่วย แล้วเฉลี่ยรายโครงการ
+              </small>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: การดำเนินการที่ต้องติดตาม */}
+        <div className="card">
+          <div className="card-head">
+            <h2>
+              <FileText className="icon" />
+              <span>การดำเนินการที่ต้องติดตาม</span>
+            </h2>
+          </div>
+          <p className="pd-caption">
+            คลิกเพื่อกรองโครงการที่เกี่ยวข้องในรายการโครงการ
+          </p>
+
+          <div className="pd-attention">
+            {attentionStats.map((item) => {
+              const isSelected = selectedFocus === item.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => {
+                    setSelectedFocus(isSelected ? "" : item.key);
+                    setSelectedStatus("all");
+                  }}
+                  className={item.tone}
+                  aria-pressed={isSelected}
+                >
+                  <span>
+                    <FileText className="icon" />
+                  </span>
+                  <b>{item.label}</b>
+                  <em>{item.count}</em>
+                  <ChevronRight className="icon" />
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Bottom Status Legend Note Card matching SVG 02 */}
-      <div className="bg-white rounded-xl p-4 border border-[#E4EAF4] shadow-xs flex items-start gap-3">
-        <Info className="w-5 h-5 text-[#075DD8] flex-shrink-0 mt-0.5" />
-        <div className="text-xs text-[#596780]">
-          <span className="font-bold text-[#0D255B] mr-2">
-            ความหมายของสถานะ:
+      {/* Operation Summaries Grid (3 Cards) matching website-demo */}
+      <div className="pd-operation-grid">
+        {/* Card 1: Transport */}
+        <Link href="/transport" className="pd-operation">
+          <span className="pd-op-icon">
+            <Truck className="w-5 h-5" />
           </span>
-          <span>
-            <strong className="text-[#147747]">กำลังดำเนินงาน</strong> =
-            เปิดใช้งานแล้ว · <strong className="text-[#596780]">วางแผน</strong>{" "}
-            = ยังไม่เปิด Baseline ·{" "}
-            <strong className="text-[#B72839]">ต้องติดตาม</strong> =
-            มีความเสี่ยง ล่าช้า หรือมีเงื่อนไขรอการแก้ไข
-          </span>
-        </div>
-      </div>
+          <div className="pd-op-title">
+            <b>ภาพรวมการขนส่ง</b>
+            <small>รายการในช่วงวันที่ที่เลือก</small>
+          </div>
+          <div>
+            <strong>7</strong>
+            <small>เที่ยว</small>
+          </div>
+          <div className="green">
+            <strong>4</strong>
+            <small>ส่งมอบแล้ว</small>
+          </div>
+          <div className="blue">
+            <strong>0</strong>
+            <small>กำลังขนส่ง</small>
+          </div>
+          <div className="red">
+            <strong>3</strong>
+            <small>เกินกำหนดถึง</small>
+          </div>
+        </Link>
 
-      {/* Footer Info */}
-      <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#596780] pt-2 border-t border-[#E4EAF4]">
-        <span>PCC PMS 2026 · DESKTOP DESIGN · ข้อมูลตัวอย่าง</span>
-        <span>02 / โครงการทั้งหมด</span>
+        {/* Card 2: Materials */}
+        <Link href="/materials" className="pd-operation">
+          <span className="pd-op-icon">
+            <Box className="w-5 h-5" />
+          </span>
+          <div className="pd-op-title">
+            <b>การเบิกจ่ายคลัง</b>
+            <small>รายการในช่วงวันที่ที่เลือก</small>
+          </div>
+          <div>
+            <strong>4</strong>
+            <small>รายการ</small>
+          </div>
+          <div className="green">
+            <strong>4</strong>
+            <small>ยืนยันจัดสรร</small>
+          </div>
+          <div className="orange">
+            <strong>0</strong>
+            <small>รออนุมัติ</small>
+          </div>
+          <div className="red">
+            <strong>0</strong>
+            <small>ต้องจัดหาเพิ่ม</small>
+          </div>
+        </Link>
+
+        {/* Card 3: QC */}
+        <Link href="/installation" className="pd-operation">
+          <span className="pd-op-icon">
+            <ShieldCheck className="w-5 h-5" />
+          </span>
+          <div className="pd-op-title">
+            <b>QC ล่าสุด</b>
+            <small>รายการในช่วงวันที่ที่เลือก</small>
+          </div>
+          <div>
+            <strong>1</strong>
+            <small>รายการ</small>
+          </div>
+          <div className="green">
+            <strong>1</strong>
+            <small>ยืนยันผลแล้ว</small>
+          </div>
+          <div className="blue">
+            <strong>0</strong>
+            <small>รอผล</small>
+          </div>
+          <div className="red">
+            <strong>0</strong>
+            <small>มีส่วนไม่ผ่าน</small>
+          </div>
+        </Link>
       </div>
-    </div>
+    </section>
   );
 }

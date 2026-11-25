@@ -297,6 +297,13 @@ model EvidenceFile {
   recordId    String?         @map("record_id")
   dailyLogId  String?         @map("daily_log_id")
   createdById String          @map("created_by_id")
+  category    String          @default("general")
+  folder      String          @default("ไฟล์แนบโครงการ")
+  title       String?
+  revision    String?
+  reference   String?
+  description String?
+  updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at")
   filename    String
   storagePath String          @map("storage_path")
   mimeType    String          @map("mime_type")

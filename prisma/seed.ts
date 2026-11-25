@@ -855,28 +855,10 @@ async function main() {
         // ---------------------------------------------------------------------
         // Seed Budget Items (SVG 27)
         // ---------------------------------------------------------------------
+        // PCC-26001 is a fence project; other work types belong to their own projects.
         const budgetData = [
           {
-            packageTitle: "งานกำแพงกันดิน (L-Wall)",
-            budgetAmount: 3.00,
-            actualCost: 2.10,
-            committedCost: 0.40,
-            forecastTotal: 3.05,
-            paidAmount: 1.80,
-            variance: 0.05,
-            notes: "งานถมดินและแผ่น L-Wall โซน 1-2",
-          },
-          {
-            packageTitle: "งานกำแพงกันดินพร้อมเสารั้ว (L-Wall+F)",
-            budgetAmount: 2.50,
-            actualCost: 1.60,
-            committedCost: 0.50,
-            forecastTotal: 2.65,
-            paidAmount: 1.40,
-            variance: 0.15,
-            notes: "ปรับระดับคันกั้นน้ำและจุดต่อเสารั้ว",
-          },
-          {
+            packageId: pkgA.id,
             packageTitle: "งานเสารั้ว (F)",
             budgetAmount: 1.50,
             actualCost: 0.90,
@@ -885,16 +867,6 @@ async function main() {
             paidAmount: 0.80,
             variance: 0.10,
             notes: "เสารั้วสำเร็จรูป F01–F10 และงานเก็บรอยต่อ",
-          },
-          {
-            packageTitle: "งานพื้นโพสเทนชั่น (PT)",
-            budgetAmount: 3.00,
-            actualCost: 1.60,
-            committedCost: 0.80,
-            forecastTotal: 3.10,
-            paidAmount: 1.40,
-            variance: 0.10,
-            notes: "แนวลวด Tendon และอุปกรณ์หัวสมอยึด AP1-AP7",
           },
         ];
 

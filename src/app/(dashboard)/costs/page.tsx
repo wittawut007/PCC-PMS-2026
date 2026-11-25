@@ -1,20 +1,40 @@
-import { getBudgetData } from "@/app/actions/phase4";
-import { BudgetCostView } from "@/components/finance/BudgetCostView";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
+import { ProjectFinanceView } from "@/components/finance/ProjectFinanceView";
+import { getProjectFinance } from "@/lib/project-finance";
+
+export const metadata: Metadata = {
+  title: "งบประมาณและต้นทุนโครงการ | PCC PMS 2026",
+  description:
+    "ระบบบริหารและติดตามงบประมาณ ต้นทุนเกิดจริง งวดเรียกเก็บเงิน และการรับชำระ",
+};
 
 interface CostsPageProps {
   searchParams: Promise<{ projectId?: string }>;
 }
 
 export default async function CostsPage({ searchParams }: CostsPageProps) {
-  const { projectId } = await searchParams;
-  const data = await getBudgetData(projectId);
+  const session = await auth();
+  if (!session?.user) redirect("/login");
 
-  return (
-    <BudgetCostView
-      allProjects={data.allProjects}
-      currentProject={data.currentProject}
-      summary={data.summary}
-      items={data.items}
-    />
-  );
+  const { projectId } = await searchParams;
+
+  // 1. Fetch all projects
+  const allProjects = await prisma.project.findMany({
+    select: {
+      id: true,
+      code: true,
+      name: true,
+      workType: true,
+      status: true,
+    },
+    orderBy: { code: "asc" },
+  });
+
+  const selectedProjectId = projectId || "";
+
+  const data = await getProjectFinance(selectedProjectId || undefined);
+  return <ProjectFinanceView key={selectedProjectId} data={data} projectId={selectedProjectId} allProjects={allProjects} />;
 }

@@ -80,3 +80,297 @@ body {
 .status-on-hold     { background: #FEF3C7; color: #D97706; }
 .status-completed   { background: #DBEAFE; color: #2563EB; }
 .status-closed      { background: #F1F5F9; color: #374151; }
+
+/* ── Shared KPI Card & Wave Design System (Matching Website Demo) ── */
+.card.kpi.pd-kpi {
+  --kpi-ink: #0a285d;
+  --kpi-accent: #1675ff;
+  --kpi-tint: #e9f2ff;
+  --kpi-wave: #eef5ff;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  min-height: 134px;
+  padding: 16px 12px 32px;
+  border: 1px solid #e0e9f5;
+  border-radius: 13px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: none;
+  text-align: left;
+  appearance: none;
+  font: inherit;
+  color: #34507c;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.card.kpi.pd-kpi.blue {
+  --kpi-ink: #0a285d;
+  --kpi-accent: #1675ff;
+  --kpi-tint: #e9f2ff;
+  --kpi-wave: #eef5ff;
+}
+
+.card.kpi.pd-kpi:hover {
+  border-color: #a0c4fa;
+  box-shadow: 0 4px 14px rgba(22, 117, 255, 0.08);
+}
+
+.card.kpi.pd-kpi[aria-pressed="true"] {
+  border: 1.5px solid #2563eb;
+  box-shadow: 0 0 0 2px rgba(22, 117, 255, 0.1);
+}
+
+.card.kpi.pd-kpi.green {
+  --kpi-ink: #04814f;
+  --kpi-accent: #059465;
+  --kpi-tint: #e7f7ef;
+  --kpi-wave: #edf9f3;
+}
+
+.card.kpi.pd-kpi.orange {
+  --kpi-ink: #bb6900;
+  --kpi-accent: #e48614;
+  --kpi-tint: #fff3e4;
+  --kpi-wave: #fff7ee;
+}
+
+.card.kpi.pd-kpi.red {
+  --kpi-ink: #d52437;
+  --kpi-accent: #ed3446;
+  --kpi-tint: #ffedef;
+  --kpi-wave: #fff0f2;
+}
+
+.card.kpi.pd-kpi.purple {
+  --kpi-ink: #6033c8;
+  --kpi-accent: #7745df;
+  --kpi-tint: #f0eaff;
+  --kpi-wave: #f5f0ff;
+}
+
+.card.kpi.pd-kpi .symbol,
+.card.kpi.pd-kpi .pd-kpi-icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  margin: 0;
+  border-radius: 50%;
+  color: var(--kpi-accent);
+  background: var(--kpi-tint);
+}
+
+.card.kpi.pd-kpi .symbol .icon,
+.card.kpi.pd-kpi .pd-kpi-icon .icon,
+.card.kpi.pd-kpi .pd-kpi-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.card.kpi.pd-kpi .pd-kpi-text {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1;
+}
+
+.card.kpi.pd-kpi .label {
+  display: block;
+  margin: 0;
+  min-height: 18px;
+  font-size: 11px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #34507c;
+}
+
+.card.kpi.pd-kpi .value {
+  display: block;
+  margin: 0;
+  font-size: clamp(20px, 1.6vw, 29px);
+  line-height: 1.5;
+  font-weight: 800;
+  color: var(--kpi-ink);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.card.kpi.pd-kpi small {
+  display: block;
+  margin: 3px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #6e86aa;
+  overflow-wrap: anywhere;
+}
+
+.card.kpi.pd-kpi .pd-wave {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 36px;
+  fill: var(--kpi-wave);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Module Detail Back Banner (Matching Website Demo) ── */
+.module-detail-back {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #edf4ff;
+  border: 1px solid #dce9fb;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.module-detail-back a,
+.module-detail-back button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #e3e8f1;
+  color: #075dd8;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.module-detail-back a:hover,
+.module-detail-back button:hover {
+  background: #f5f8fd;
+  border-color: #bbd3f8;
+  color: #064bb0;
+}
+
+.module-detail-back span {
+  font-size: 13px;
+  color: #6581a5;
+  font-weight: 500;
+}
+
+/* ── Flowbite Dropdown Theme Tokens & Utility Classes ── */
+.flowbite-dropdown-button {
+  background-color: #ffffff !important;
+  border-radius: 12px !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #0D255B !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease !important;
+}
+
+.flowbite-dropdown-button:hover {
+  border-color: #075DD8 !important;
+  background-color: #FBFDFF !important;
+}
+
+.flowbite-dropdown-menu {
+  background-color: #ffffff !important;
+  border-radius: 16px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+}
+
+.flowbite-dropdown-item {
+  border-radius: 10px !important;
+  transition: all 0.15s ease !important;
+}
+
+.flowbite-dropdown-item:hover {
+  background-color: #F8FAFC !important;
+  color: #075DD8 !important;
+}
+
+.bg-brand {
+  background-color: #075DD8 !important;
+}
+
+.hover\:bg-brand-strong:hover {
+  background-color: #0544A3 !important;
+}
+
+.focus\:ring-brand-medium:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(7, 93, 216, 0.25) !important;
+}
+
+.rounded-base {
+  border-radius: 0.75rem !important; /* 12px */
+}
+
+.bg-neutral-primary-medium {
+  background-color: #FFFFFF !important;
+}
+
+.border-default-medium {
+  border-color: #DFE7F2 !important;
+}
+
+.text-body {
+  color: #334155 !important;
+}
+
+.hover\:bg-neutral-tertiary-medium:hover {
+  background-color: #F0F5FD !important;
+}
+
+.hover\:text-heading:hover {
+  color: #075DD8 !important;
+}
+
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ── PCC Gradient Confirmation Button (Matching Login Button) ── */
+.btn-gradient-pcc,
+.btn-confirm-gradient {
+  background: linear-gradient(90deg, #0867e8, #12a77c) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(8, 103, 232, 0.25) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.btn-gradient-pcc:hover:not(:disabled),
+.btn-confirm-gradient:hover:not(:disabled) {
+  filter: brightness(1.06) !important;
+  box-shadow: 0 6px 18px rgba(8, 103, 232, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-gradient-pcc:active:not(:disabled),
+.btn-confirm-gradient:active:not(:disabled) {
+  transform: translateY(0) scale(0.99) !important;
+  filter: brightness(0.98) !important;
+}
+
+.btn-gradient-pcc:disabled,
+.btn-confirm-gradient:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+

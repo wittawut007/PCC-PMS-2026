@@ -325,10 +325,14 @@ export function ReceivingInspectionForm({ data }: ReceivingInspectionFormProps) 
               type="button"
               disabled={isSaving}
               onClick={() => handleSave(false)}
-              className="w-full py-3 px-4 rounded-xl bg-[#075DD8] hover:bg-[#054bb2] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 btn-gradient-pcc cursor-pointer"
+              style={{
+                background: "linear-gradient(90deg, #0867e8, #12a77c)",
+                color: "#ffffff",
+              }}
             >
               <CheckCircle2 className="w-4 h-4" />
-              {isSaving ? "กำลังบันทึก..." : "ยืนยันรับบางส่วน"}
+              <span>{isSaving ? "กำลังบันทึก..." : "ยืนยันรับบางส่วน"}</span>
             </button>
 
             <button

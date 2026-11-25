@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Clock, FileText, ArrowLeft, Send, Save, Eye } from "lucide-react";
 import { createMaterialRequestAction } from "@/app/actions/materials";
+import { CallyDatePicker } from "@/components/common/CallyDatePicker";
 
 interface MaterialRequestFormProps {
   projects: Array<{ id: string; code: string; name: string }>;
@@ -171,11 +172,12 @@ export function MaterialRequestForm({
               <label className="block text-xs font-semibold text-[#0D255B] mb-1.5">
                 วันที่ต้องใช้หน้างาน *
               </label>
-              <input
-                type="date"
+              <CallyDatePicker
                 value={neededBy}
-                onChange={(e) => setNeededBy(e.target.value)}
-                className="w-full bg-white border border-[#D0D9E7] rounded-lg px-3 py-2 text-xs text-[#0D255B] font-medium focus:outline-none focus:ring-1 focus:ring-[#075DD8]"
+                onChange={(val) => setNeededBy(val)}
+                required
+                size="sm"
+                align="right"
               />
             </div>
           </div>
@@ -318,10 +320,14 @@ export function MaterialRequestForm({
               type="button"
               disabled={isSubmitting}
               onClick={() => handleSubmit(true)}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#075DD8] hover:bg-[#054bb2] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="w-full py-2.5 px-4 rounded-xl text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md btn-gradient-pcc cursor-pointer"
+              style={{
+                background: "linear-gradient(90deg, #0867e8, #12a77c)",
+                color: "#ffffff",
+              }}
             >
               <Send className="w-4 h-4" />
-              ส่ง PM อนุมัติ
+              <span>ส่ง PM อนุมัติ</span>
             </button>
 
             <button

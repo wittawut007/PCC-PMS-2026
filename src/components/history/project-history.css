@@ -1,0 +1,64 @@
+.project-history .phis-notice { padding: 12px 16px; border: 1px solid #dce8fb; background: #f4f8ff; color: #627d9f; border-radius: 10px; font-size: 12px; line-height: 1.8; margin-bottom: 20px; }
+.project-history .phis-filters label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #627d9f; min-width: 0; }
+.project-history .phis-filters input, .project-history .phis-filters select { width: 100%; min-width: 0; border: 1px solid #dce5f4; border-radius: 8px; font-size: 13px; color: #183660; padding: 10px 12px; background: white; }
+.project-history .phis-filters .phis-search { grid-column: 1 / -1; position: relative; }
+.project-history .phis-search svg { position: absolute; top: 12px; left: 12px; }
+.project-history .phis-search input { padding-left: 38px; }
+.project-history .phis-results h3 { font-size: 18px; margin: 0; }
+.project-history .phis-timeline { list-style: none; padding: 0; margin: 0; }
+.project-history .phis-timeline > li { position: relative; padding: 0 0 18px 26px; }
+.project-history .phis-timeline article { padding: 18px 20px; border: 1px solid #dce5f4; border-radius: 12px; overflow-wrap: anywhere; }
+.project-history .phis-dot { position: absolute; z-index: 1; top: 20px; left: 0; width: 12px; height: 12px; border: 3px solid white; border-radius: 50%; background: #1675ff; box-shadow: 0 0 0 2px #dce8fc; }
+.project-history .phis-line { position: absolute; top: 31px; left: 5px; bottom: -20px; width: 2px; background: #e1eaf7; }
+.project-history .phis-event-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.project-history .phis-event-head > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.project-history .phis-badge { padding: 4px 9px; border-radius: 6px; background: #eaf3ff; color: #075dd8; font-size: 12px; font-weight: 600; }
+.project-history .phis-badge.phis-create { background: #e7f7f0; color: #00855c; }
+.project-history .phis-badge.phis-approve { background: #f1ebff; color: #6f3fd6; }
+.project-history .phis-badge.phis-reject, .project-history .phis-badge.phis-delete { background: #fff0f2; color: #bf3355; }
+.project-history .phis-badge.phis-record { background: #f0f3f8; color: #64748b; }
+.project-history .phis-source, .project-history time { font-size: 11px; color: #71829e; }
+.project-history .phis-timeline h4 { font-size: 16px; margin: 10px 0 6px; }
+.project-history .phis-timeline p { font-size: 13px; margin: 4px 0; color: #627d9f; }
+.project-history details { margin-top: 12px; border-top: 1px solid #edf1f8; padding-top: 10px; }
+.project-history summary { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #075dd8; font-size: 12px; }
+.project-history details > small { display: block; margin-top: 12px; font-size: 11px; color: #71829e; }
+.project-history .phis-fields { font-size: 12px; margin-top: 8px; }
+.project-history .phis-fields > div { display: grid; grid-template-columns: minmax(100px,.35fr) minmax(0,1fr); gap: 12px; padding: 8px; border-bottom: 1px solid #edf1f8; }
+.project-history .phis-fields dt { color: #71829e; }
+.project-history .phis-fields dd { margin: 0; white-space: pre-wrap; }
+.project-history .phis-empty { padding: 50px 20px; text-align: center; background: #f8fbff; color: #71829e; border-radius: 12px; }
+.project-history .phis-pagination { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 20px; font-size: 13px; }
+.project-history .phis-pagination button:disabled { opacity: .4; cursor: default; }
+.project-history .phis-content { padding: 20px; min-width: 0; border: 1px solid #dce5f4; border-radius: 14px; background: white; }
+.project-history .phis-results { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 20px; }
+.project-history .phis-results > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; }
+.project-history .phis-results span[role="status"] { color: #71829e; font-size: 12px; }
+.project-history .phis-filter-trigger { position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex: none; border: 1px solid #dce5f4; border-radius: 10px; color: #075dd8; background: white; cursor: pointer; }
+.project-history .phis-filter-trigger:hover, .project-history .phis-filter-trigger.is-active { background: #eaf3ff; border-color: #b5d2ff; }
+.project-history .phis-filter-count { position: absolute; top: -7px; right: -7px; display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 20px; background: #075dd8; border: 2px solid white; color: white; font-size: 10px; font-weight: 700; }
+.project-history .phis-filter-dialog { width: min(720px, calc(100vw - 32px)); max-height: min(90dvh, 840px); margin: auto; padding: 0; border: 1px solid #dce5f4; border-radius: 16px; background: white; color: #173263; box-shadow: 0 24px 80px #12356835; overflow: auto; }
+.project-history .phis-filter-dialog::backdrop { background: #10264b66; backdrop-filter: blur(3px); }
+.project-history .phis-filter-dialog header { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 24px; background: white; border-bottom: 1px solid #e5edf7; }
+.project-history .phis-filter-dialog header > div { display: flex; align-items: center; gap: 10px; }
+.project-history .phis-filter-dialog h3 { margin: 0; font-size: 18px; }
+.project-history .phis-close { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; flex: none; color: #627d9f; cursor: pointer; }
+.project-history .phis-close:hover { background: #eaf3ff; }
+.project-history .phis-filters { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px 16px; padding: 24px; }
+.project-history .phis-filter-dialog footer { position: sticky; bottom: 0; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 24px; border-top: 1px solid #e5edf7; background: white; }
+.project-history .phis-filter-dialog footer > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.project-history .phis-filter-dialog footer button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; padding: 9px 14px; font-size: 13px; border-radius: 9px; color: #075dd8; cursor: pointer; }
+.project-history .phis-filter-dialog footer .phis-cancel { border: 1px solid #dce5f4; }
+.project-history .phis-filter-dialog footer .phis-apply { background: #075dd8; color: white; }
+.project-history .phis-filter-dialog footer .phis-apply:hover { background: #004ab3; }
+.project-history .phis-filter-dialog footer .phis-refresh { color: #627d9f; }
+@media(max-width:760px) {
+  .project-history .phis-content { padding: 14px; }
+  .project-history .phis-fields > div { grid-template-columns: 1fr; gap: 4px; }
+  .project-history .phis-filters { grid-template-columns: 1fr; padding: 18px; }
+  .project-history .phis-filter-dialog header { padding: 16px 18px; }
+  .project-history .phis-filter-dialog h3 { font-size: 16px; }
+  .project-history .phis-filter-dialog footer { padding: 12px 18px; }
+}
+
+.project-history .phis-pagination button { border: 1px solid #dce5f4; border-radius: 8px; padding: 9px 14px; color: #075dd8; font-size: 13px; cursor: pointer; }

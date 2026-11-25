@@ -1,0 +1,191 @@
+/* Cally Calendar daisyUI Styling matching media_1794063881980_8505c880.png and daisyUI v5 spec */
+
+.cally {
+  --color-accent: #075dd8;
+  --color-text-on-accent: #ffffff;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --color-base-100: #ffffff;
+  --color-base-200: #f1f5f9;
+  --color-base-300: #e2e8f0;
+  --color-base-content: #1e293b;
+  --color-primary: #075dd8;
+  --color-primary-content: #ffffff;
+
+  display: inline-block;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  user-select: none;
+}
+
+/* Container */
+.cally::part(container) {
+  user-select: none;
+  padding: 0.75rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Header with Prev, Year, Next */
+.cally::part(header) {
+  direction: ltr;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+
+.cally::part(heading) {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+/* Nav Buttons in Header (Previous / Next) */
+.cally::part(button) {
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.cally::part(button):hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.cally::part(button):focus-visible {
+  outline: 2px solid #075dd8;
+  outline-offset: 1px;
+}
+
+/* Month Component */
+.cally calendar-month {
+  width: 100%;
+}
+
+/* Month Name Heading (e.g. November) */
+.cally ::part(heading) {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Table Head and Weekday Labels (M T W T F S S) */
+.cally ::part(head) {
+  opacity: 0.6;
+  font-size: 0.75rem;
+}
+
+.cally ::part(th) {
+  block-size: auto;
+  font-weight: 500;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+/* Day Buttons in Table */
+.cally ::part(button) {
+  border-radius: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cally ::part(button):hover {
+  background: #f1f5f9;
+}
+
+.cally ::part(day) {
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.cally ::part(day):hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Today Day (Dark box like media attachment) */
+.cally ::part(button day today) {
+  background: #18181b;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.5rem;
+}
+
+/* Selected Day (Primary accent blue/indigo) */
+.cally ::part(selected) {
+  color: #ffffff !important;
+  background: #075dd8 !important;
+  border-radius: 0.5rem;
+  font-weight: 700;
+}
+
+.cally ::part(selected):hover {
+  background: #0544a3 !important;
+  color: #ffffff !important;
+}
+
+/* Range selection styles */
+.cally ::part(range-inner) {
+  border-radius: 0;
+  background: #eff6ff;
+  color: #075dd8;
+}
+
+.cally ::part(range-start) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  background: #075dd8;
+  color: #ffffff;
+}
+
+.cally ::part(range-end) {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  background: #075dd8;
+  color: #ffffff;
+}
+
+.cally ::part(range-start range-end) {
+  border-radius: 0.5rem;
+}
+
+/* Outside/disabled days */
+.cally ::part(outside),
+.cally ::part(disallowed) {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* DaisyUI compatibility tokens */
+.bg-base-100 {
+  background-color: #ffffff;
+}
+
+.border-base-300 {
+  border-color: #e2e8f0;
+}
+
+.rounded-box {
+  border-radius: 1rem;
+}

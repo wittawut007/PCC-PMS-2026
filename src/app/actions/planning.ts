@@ -1,5 +1,6 @@
 "use server";
 
+import { auditedMutation } from "@/lib/project-audit";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -212,7 +213,8 @@ export async function updateTaskScheduleAction(data: {
     dbStatus = TaskStatus.PENDING;
   }
 
-  await prisma.task.update({
+  await auditedMutation({ projectId: existing.projectId, action: "PLAN_UPDATED", entityId: existing.id, data: { title: existing.name, reference: existing.code, before: { plannedStart: existing.plannedStart, plannedEnd: existing.plannedEnd, status: existing.status }, after: { ...data, status: dbStatus } } }, async tx => {
+  await tx.task.update({
     where: { id: data.taskId },
     data: {
       plannedStart: new Date(data.plannedStart),
@@ -220,6 +222,9 @@ export async function updateTaskScheduleAction(data: {
       status: dbStatus,
       notes: JSON.stringify(meta),
     },
+  });
+
+
   });
 
   revalidatePath("/planning");
@@ -242,14 +247,15 @@ export async function resetProjectPlanAction(projectId: string, packageId: strin
   const startStr = project.startDate ? project.startDate.toISOString().slice(0, 10) : "2026-10-01";
   const planItems = defaultPlan(template, startStr);
 
+  await auditedMutation({ projectId, action: "PLAN_RESET", entityId: packageId, data: { title: "คืนค่าแผนชุดงาน", packageId, startDate: startStr } }, async tx => {
   for (let idx = 0; idx < planItems.length; idx++) {
     const item = planItems[idx];
-    const existing = await prisma.task.findFirst({
+    const existing = await tx.task.findFirst({
       where: { packageId, code: item.code },
     });
 
     if (existing) {
-      await prisma.task.update({
+      await tx.task.update({
         where: { id: existing.id },
         data: {
           plannedStart: new Date(item.start),
@@ -259,6 +265,9 @@ export async function resetProjectPlanAction(projectId: string, packageId: strin
       });
     }
   }
+
+
+  });
 
   revalidatePath("/planning");
   revalidatePath(`/projects/${projectId}`);

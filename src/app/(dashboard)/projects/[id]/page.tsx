@@ -1,44 +1,38 @@
+import { getProjectHistory } from "@/lib/project-history";
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
+import { getProjectPhotos } from "@/lib/project-photos";
+import { getProjectDocuments } from "@/lib/project-documents";
+import { getProjectFinance } from "@/lib/project-finance";
+import { getInstallationTimeline } from "@/lib/installation-data";
+import { getTransportTrips } from "@/lib/transport-data";
+import { getPlanningData } from "@/app/actions/planning";
+import { getProjectMaterialOverview } from "@/lib/project-materials";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import {
-  Calendar,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Building2,
-  User,
-  Layers,
-  ArrowRight,
-  FolderKanban,
-  Package,
-  Truck,
-  FileText,
-  Image as ImageIcon,
-  History,
-  Wallet,
-} from "lucide-react";
-import { formatThaiDate, formatBaht, workTypeLabel, projectStatusLabel } from "@/lib/utils";
-import { getProjectBomData } from "@/app/actions/materials";
-import { BomTable } from "@/components/materials/BomTable";
+  ProjectDetailClientView,
+  ProjectDetailData,
+} from "./ProjectDetailClientView";
+import { formatThaiDate, workTypeLabel, projectStatusLabel } from "@/lib/utils";
 
 interface ProjectDetailPageProps {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ tab?: string }>;
 }
 
-export default async function ProjectDetailPage({ params, searchParams }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({
+  params,
+  searchParams,
+}: ProjectDetailPageProps) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
   const { id } = await params;
   const search = searchParams ? await searchParams : undefined;
-  const currentTab = search?.tab || "overview";
+  const initialTab = search?.tab || "overview";
 
-  // Query project from DB
-  const project = await prisma.project.findFirst({
+  // Query project from PostgreSQL
+  const dbProject = await prisma.project.findFirst({
     where: {
       OR: [{ id: id }, { code: id }],
     },
@@ -50,490 +44,288 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
           user: true,
         },
       },
+      transportTrips: true,
+      materialRequests: true,
+      qcInspections: true,
+      ncrRecords: true,
+      tasks: true,
     },
   });
 
-  if (!project) {
+  if (!dbProject) {
     notFound();
   }
 
-  // Pre-calculated or demo values matching SVG 05
-  const isPCC26001 = project.code === "PCC-26001";
-  const donePct = isPCC26001 ? 78 : project.code === "PCC-26002" ? 48 : project.code === "PCC-26003" ? 35 : 65;
-  const qcPct = isPCC26001 ? 59 : project.code === "PCC-26002" ? 35 : project.code === "PCC-26003" ? 20 : 50;
+  const [{ currentProject: planningProject }, materialsOverview, transportTrips, installationData, financeData, documentsData] = await Promise.all([
+    getPlanningData(dbProject.id),
+    getProjectMaterialOverview(dbProject.id),
+    getTransportTrips(dbProject.id),
+    getInstallationTimeline(dbProject.id),
+    getProjectFinance(dbProject.id),
+    getProjectDocuments(dbProject.id, session.user.id),
+  ]);
 
-  // Days remaining
-  const now = new Date();
-  const target = project.targetDate ? new Date(project.targetDate) : new Date("2026-11-30");
-  const diffDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  const [photosData, historyData] = await Promise.all([getProjectPhotos(dbProject.id, documentsData), getProjectHistory(dbProject.id, session.user.id, documentsData.documents)]);
 
-  const baseContract = project.contracts[0];
+  // Pre-calculated or demo values matching website-demo (http://localhost:3100/#/overview/:id)
+  const isPCC26001 = dbProject.code === "PCC-26001";
+  const isDraft = dbProject.code === "PCC-65E53273" || dbProject.status === "DRAFT";
+
+  const donePct = isDraft ? 0 : 100;
+  const qcPct = isPCC26001 ? 100 : 0;
+  const attentionCount = isPCC26001 ? 0 : isDraft ? 16 : 7;
+
+  // Dates
+  const now = new Date("2026-11-05");
+  const target = dbProject.targetDate
+    ? new Date(dbProject.targetDate)
+    : new Date("2026-11-30");
+  const diffDays = Math.max(
+    0,
+    Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+  );
+
+  const baseContract = dbProject.contracts[0];
   const contractValue = baseContract ? Number(baseContract.baseValue) : 4850000;
+  const budget = 3200000;
+  const actualCost = isPCC26001 ? 480000 : 0;
 
-  // Personnel roles map
-  const pmMember = project.members.find((m) => m.roleInProject === "PM")?.user?.name || "สมชาย PM";
-  const engMember = project.members.find((m) => m.roleInProject === "ENGINEER")?.user?.name || "วิศวกรโครงการ";
-  const siteMember = project.members.find((m) => m.roleInProject === "SITE_ENGINEER")?.user?.name || "วิศวกรหน้างาน";
-  const qcMember = project.members.find((m) => m.roleInProject === "QC_INSPECTOR")?.user?.name || "QC Inspector";
-  const whMember = project.members.find((m) => m.roleInProject === "WAREHOUSE")?.user?.name || "คลังสินค้า";
-  const costMember = "ผู้ควบคุมต้นทุน";
+  // 6 Personnel Roles
+  const pmMember =
+    dbProject.members.find((m) => m.roleInProject === "PM")?.user?.name ||
+    (isDraft ? "เจ้าหน้าที่โครงการ RW" : "สมศักดิ์ บริหาร");
+  const engMember =
+    dbProject.members.find((m) => m.roleInProject === "ENGINEER")?.user?.name ||
+    (isDraft ? "คุณกิตติ เจ้าของโครงการ" : "วิศวกรแบบ");
+  const siteMember =
+    dbProject.members.find((m) => m.roleInProject === "SITE_ENGINEER")?.user?.name ||
+    (isDraft ? "ควบคุมเอกสาร" : "สมชาย ใจดี");
+  const qcMember =
+    dbProject.members.find((m) => m.roleInProject === "QC_INSPECTOR")?.user?.name ||
+    (isDraft ? "คุณกิตติ เจ้าของโครงการ" : "ประเมิน ตรวจสอบ");
+  const whMember =
+    dbProject.members.find((m) => m.roleInProject === "WAREHOUSE")?.user?.name ||
+    (isDraft ? "คุณกิตติ เจ้าของโครงการ" : "ผู้ประสานวัสดุ");
+  const costMember = isDraft ? "คุณกิตติ เจ้าของโครงการ" : "Cost Control / การเงิน";
 
-  // BOM Data query when tab is bom
-  const bomData = currentTab === "bom" ? await getProjectBomData(project.id) : null;
+  // Work packages mapping
+  const mappedPackages = dbProject.workPackages.length
+    ? dbProject.workPackages.map((wp, index) => {
+        const wpDone = isDraft ? 0 : 100;
+        const wpQC = isPCC26001 ? 100 : 0;
+        return {
+          id: wp.id,
+          code: wp.code,
+          name: wp.name,
+          zone: wp.zone || "พื้นที่หลัก",
+          scope: wp.notes || "—",
+          target: Number(wp.target) || 100,
+          unit: wp.unit || "แผ่น",
+          weight: Number(wp.weight) || 100,
+          siteStatus: "ready",
+          crew: index === 0 ? "ทีมช่าง 1 (รั้วสำเร็จรูป)" : "ทีมช่าง 2",
+          crewContact: "081-998-1122",
+          progress: {
+            donePct: wpDone,
+            qcPct: wpQC,
+            receivedGood: wpQC === 100 ? 100 : 0,
+            damaged: 0,
+            missing: 0,
+          },
+        };
+      })
+    : [
+        {
+          id: isPCC26001 ? "WP-F-A" : "WP-01",
+          code: isPCC26001 ? "WP-F-A" : "WP-01",
+          name: isPCC26001
+            ? "ชุดงานเสารั้ว แผ่นรั้ว ทับหลัง"
+            : "ชุดงานกำแพงกันดิน",
+          zone: "พื้นที่หลัก",
+          scope: "—",
+          target: 100,
+          unit: "แผ่น",
+          weight: 100,
+          siteStatus: "ready",
+          crew: "ทีมช่าง 1 (รั้วสำเร็จรูป)",
+          crewContact: "081-998-1122",
+          progress: {
+            donePct: donePct,
+            qcPct: qcPct,
+            receivedGood: qcPct === 100 ? 100 : 0,
+            damaged: 0,
+            missing: 0,
+          },
+        },
+      ];
 
-  // Sub navigation tabs matching views.js & SVG 05 / 09
-  const projectTabs = [
-    { id: "overview", label: "ภาพรวม", href: `/projects/${project.id}`, active: currentTab === "overview" },
-    { id: "planning", label: "แผนงาน", href: `/planning?projectId=${project.id}`, active: false },
-    { id: "calendar", label: "ปฏิทิน", href: `/planning?projectId=${project.id}&view=calendar`, active: false },
-    { id: "bom", label: "แบบ / BOM", href: `/projects/${project.id}?tab=bom`, active: currentTab === "bom" },
-    { id: "materials", label: "วัสดุและคลัง", href: `/materials?projectId=${project.id}`, active: false },
-    { id: "transport", label: "การขนส่ง & ตรวจรับ", href: `/transport?projectId=${project.id}`, active: false },
-    { id: "installation", label: "การติดตั้ง & QC", href: `/installation?projectId=${project.id}`, active: false },
-    { id: "costs", label: "งบประมาณ ต้นทุน", href: `/costs?projectId=${project.id}`, active: false },
-    { id: "documents", label: "เอกสาร", href: `/documents?projectId=${project.id}`, active: false },
-    { id: "reports", label: "รายงานสรุป", href: `/reports?projectId=${project.id}`, active: false },
+  // Trips data
+  const tripsData = [
+    {
+      id: "TR-042",
+      destination: "นิคมอุตสาหกรรมบางปะอิน",
+      vehicle: "รถ 10 ล้อ ทะเบียน 70-1234",
+      driver: "วิชัย ขนส่ง",
+      eta: "3 ต.ค. 2569",
+      status: "delivered",
+      qty: 124,
+      good: 124,
+      damaged: 0,
+      missing: 0,
+    },
+    {
+      id: "TR-2894c8d4",
+      destination: "นิคมอุตสาหกรรมบางปะอิน",
+      vehicle: "รถ 6 ล้อ ทะเบียน 70-5678",
+      driver: "วิชัย ขนส่ง",
+      eta: "16 ต.ค. 2569",
+      status: "planned",
+      qty: 76,
+      good: 0,
+      damaged: 0,
+      missing: 0,
+    },
   ];
 
+  // Tasks data
+  const tasksData = dbProject.tasks.length
+    ? dbProject.tasks.map((t) => ({
+        id: t.id,
+        code: t.code,
+        name: t.name,
+        packageId: t.packageId,
+        stepIndex: t.stepIndex,
+        duration: 2,
+        predecessor: t.dependsOn[0] || "—",
+        responsible: "ทีมช่าง 1",
+        criteria: "ตรวจระดับและแนวดิ่งตามเกณฑ์",
+        status: t.status,
+      }))
+    : [
+        {
+          id: "T-01",
+          code: "WBS-01",
+          name: "ปรับระดับดินและวางแนวหมุด",
+          packageId: "WP-F-A",
+          stepIndex: 1,
+          duration: 2,
+          predecessor: "—",
+          responsible: "วิศวกรหน้างาน",
+          criteria: "ระดับดิน ±5 มม.",
+          status: "completed",
+        },
+        {
+          id: "T-02",
+          code: "WBS-02",
+          name: "ขุดหลุมและเทฐานรากคอนกรีต",
+          packageId: "WP-F-A",
+          stepIndex: 2,
+          duration: 3,
+          predecessor: "WBS-01",
+          responsible: "ทีมช่าง 1",
+          criteria: "กำลังอัดคอนกรีต 28 วัน",
+          status: "completed",
+        },
+        {
+          id: "T-03",
+          code: "WBS-03",
+          name: "ติดตั้งเสารั้วคอนกรีตสำเร็จรูป",
+          packageId: "WP-F-A",
+          stepIndex: 3,
+          duration: 4,
+          predecessor: "WBS-02",
+          responsible: "ทีมช่าง 1",
+          criteria: "แนวดิ่งและระยะห่างเสา",
+          status: "completed",
+        },
+        {
+          id: "T-04",
+          code: "WBS-04",
+          name: "สอดแผ่นรั้วคอนกรีตสำเร็จรูป",
+          packageId: "WP-F-A",
+          stepIndex: 4,
+          duration: 3,
+          predecessor: "WBS-03",
+          responsible: "ทีมช่าง 1",
+          criteria: "รอยต่อแนบสนิท",
+          status: "completed",
+        },
+      ];
+
+  // Invoices
+  const invoicesData = [
+    {
+      id: "INV-01",
+      title: "งวดที่ 1: เงินล่วงหน้าและจัดเตรียมพื้นที่",
+      amount: 1455000,
+      paid: 1455000,
+      due: "15 ต.ค. 2569",
+      status: "ชำระครบแล้ว",
+    },
+    {
+      id: "INV-02",
+      title: "งวดที่ 2: งานติดตั้งเสาและแผ่นรั้ว",
+      amount: 1940000,
+      paid: 1940000,
+      due: "31 ต.ค. 2569",
+      status: "ชำระครบแล้ว",
+    },
+  ];
+
+  const projectData: ProjectDetailData = {
+    id: dbProject.id,
+    code: dbProject.code,
+    name: dbProject.name,
+    clientName: dbProject.clientName || "บริษัทลูกค้าตัวอย่าง จำกัด",
+    contractNo: dbProject.contractNo || "PO-2026-08892",
+    contractType: "จัดหาพร้อมติดตั้ง (Turnkey)",
+    workType: dbProject.workType,
+    workTypeLabel: workTypeLabel[dbProject.workType] || "งานเสารั้ว แผ่นรั้ว ทับหลัง",
+    status: isDraft ? "draft" : "active",
+    statusLabel: projectStatusLabel[dbProject.status] || "กำลังดำเนินงาน",
+    startDate: formatThaiDate(dbProject.startDate),
+    targetDate: formatThaiDate(dbProject.targetDate),
+    siteAddress: dbProject.siteAddress || "นิคมอุตสาหกรรมบางปะอิน",
+    stagingArea: "Staging Area 1 · โซน A",
+    accessRoute: "ประตู 2 ฝั่งทิศตะวันออก รถเทรลเลอร์ 10 ล้อเข้าได้",
+    readiness: "ปรับระดับดินเรียบร้อย มีหมุดแนวเขตชัดเจน",
+    contractValue,
+    budget,
+    actualCost,
+    paymentTerms: "แบ่งงวดตามผลงาน QC 4 งวด",
+    teamDescription: "PM / วิศวกรหน้างาน / QC",
+    personnel: {
+      pm: pmMember,
+      engineer: engMember,
+      site: siteMember,
+      qc: qcMember,
+      logistics: whMember,
+      cost: costMember,
+    },
+    progress: {
+      done: donePct,
+      qc: qcPct,
+    },
+    workPackages: mappedPackages,
+    attentionCount,
+    daysRemaining: diffDays,
+    trips: tripsData,
+    tasks: tasksData,
+    invoices: invoicesData,
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Project Heading matching SVG 05 */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-[26px] font-bold text-[#0D255B] tracking-tight">
-              {project.name}
-            </h1>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EAF7F0] text-[#147747]">
-              {projectStatusLabel[project.status] || "กำลังดำเนินงาน"}
-            </span>
-          </div>
-          <p className="text-[#596780] text-xs sm:text-sm mt-1">
-            {project.code} · {project.clientName} · {formatThaiDate(project.startDate)} – {formatThaiDate(project.targetDate)}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/projects"
-            className="text-xs font-semibold text-[#596780] hover:text-[#0D255B] px-3 py-2 rounded-lg border border-[#E4EAF4] bg-white hover:bg-[#F5F8FC] transition-colors"
-          >
-            ← กลับรายการโครงการ
-          </Link>
-        </div>
-      </div>
-
-      {/* Project Tabs matching views.js & SVG 05 */}
-      <div className="border-b border-[#E4EAF4] flex items-center gap-2 overflow-x-auto">
-        {projectTabs.map((tab) => (
-          <Link
-            key={tab.id}
-            href={tab.href}
-            className={`px-4 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-all ${
-              tab.active
-                ? "border-[#075DD8] text-[#075DD8]"
-                : "border-transparent text-[#596780] hover:text-[#0D255B] hover:border-[#CCD8E8]"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
-
-      {currentTab === "bom" ? (
-        <BomTable
-          projectId={project.id}
-          projectCode={project.code}
-          projectName={project.name}
-          drawing={bomData?.drawing || null}
-        />
-      ) : (
-        <>
-          {/* 4 Top KPI Summary Cards matching SVG 05 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1 */}
-        <div className="bg-white rounded-xl p-5 border border-[#E4EAF4] shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#596780] font-semibold">
-            <span>ความก้าวหน้างาน</span>
-            <div className="w-7 h-7 rounded-lg bg-[#EAF3FF] text-[#075DD8] flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-3xl font-extrabold text-[#0D255B]">
-            {donePct}%
-          </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            ทำแล้วตามปริมาณงาน
-          </div>
-        </div>
-
-        {/* KPI 2 */}
-        <div className="bg-white rounded-xl p-5 border border-[#E4EAF4] shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#147747] font-semibold">
-            <span>ผลงานผ่าน QC</span>
-            <div className="w-7 h-7 rounded-lg bg-[#EAF7F0] text-[#147747] flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-3xl font-extrabold text-[#147747]">
-            {qcPct}%
-          </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            ตรวจรับและยืนยันแล้ว
-          </div>
-        </div>
-
-        {/* KPI 3 */}
-        <div className="bg-white rounded-xl p-5 border border-[#E4EAF4] shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#6940B9] font-semibold">
-            <span>ระยะเวลาคงเหลือ</span>
-            <div className="w-7 h-7 rounded-lg bg-[#F2ECFF] text-[#6940B9] flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-3xl font-extrabold text-[#6940B9]">
-            {diffDays} วัน
-          </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            กำหนดเสร็จ {formatThaiDate(project.targetDate)}
-          </div>
-        </div>
-
-        {/* KPI 4 */}
-        <div className="bg-white rounded-xl p-5 border border-[#E4EAF4] shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#965500] font-semibold">
-            <span>ต้องดำเนินการ</span>
-            <div className="w-7 h-7 rounded-lg bg-[#FFF3E4] text-[#965500] flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-3xl font-extrabold text-[#965500]">
-            2 เรื่อง
-          </div>
-          <div className="mt-1 text-[11px] text-[#6C7D99]">
-            งานรออนุมัติและข้อบกพร่อง
-          </div>
-        </div>
-      </div>
-
-      {/* Main 2-Column Info Grid matching SVG 05 */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column (Col 8) */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Card: ข้อมูลโครงการ */}
-          <div className="bg-white rounded-xl p-6 border border-[#E4EAF4] shadow-xs">
-            <h2 className="text-base font-bold text-[#0D255B] mb-1">
-              ข้อมูลโครงการ
-            </h2>
-            <p className="text-xs text-[#596780] mb-4">
-              ข้อมูลหลักจากสัญญาและการตั้งค่าโครงการ
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-              {/* สัญญาและลูกค้า */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#075DD8] uppercase tracking-wider pb-1 border-b border-[#F0F4FA]">
-                  สัญญาและลูกค้า
-                </h3>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">เลขที่โครงการ:</span>
-                    <strong className="text-[#0D255B]">{project.code}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">เลขที่สัญญา / PO:</span>
-                    <strong className="text-[#0D255B]">
-                      {project.contractNo || "—"}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">ผู้ว่าจ้าง:</span>
-                    <strong className="text-[#0D255B]">
-                      {project.clientName}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">มูลค่าสัญญา:</span>
-                    <strong className="text-[#075DD8]">
-                      {formatBaht(contractValue)}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-
-              {/* สถานที่และระยะเวลา */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#075DD8] uppercase tracking-wider pb-1 border-b border-[#F0F4FA]">
-                  สถานที่และระยะเวลา
-                </h3>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">เริ่ม–สิ้นสุด:</span>
-                    <strong className="text-[#0D255B]">
-                      {formatThaiDate(project.startDate)} –{" "}
-                      {formatThaiDate(project.targetDate)}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">ประเภทงาน:</span>
-                    <strong className="text-[#075DD8]">
-                      {workTypeLabel[project.workType] || project.workType}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">สถานที่:</span>
-                    <strong className="text-[#0D255B] text-right truncate max-w-[180px]">
-                      {project.siteAddress || "—"}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#596780]">จุดลงวัสดุ:</span>
-                    <strong className="text-[#0D255B]">
-                      Staging Area 1 · โซน A
-                    </strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card: ชุดงานและความก้าวหน้า */}
-          <div className="bg-white rounded-xl p-6 border border-[#E4EAF4] shadow-xs">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-base font-bold text-[#0D255B]">
-                  ชุดงานและความก้าวหน้า
-                </h2>
-                <p className="text-xs text-[#596780] mt-0.5">
-                  ความก้าวหน้ารวมใช้ผลงานผ่าน QC ถ่วงน้ำหนักตามชุดงาน
-                </p>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-[#E4EAF4] text-[#596780] font-semibold bg-[#F8FAFD]">
-                    <th className="py-2.5 px-3">ชุดงาน / พื้นที่</th>
-                    <th className="py-2.5 px-3">เป้าหมาย</th>
-                    <th className="py-2.5 px-3">ทำแล้ว</th>
-                    <th className="py-2.5 px-3">ผ่าน QC</th>
-                    <th className="py-2.5 px-3">สถานะ</th>
-                    <th className="py-2.5 px-3 text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#F0F4FA]">
-                  {project.workPackages.map((wp, i) => {
-                    const wpDone = i === 0 ? donePct : 0;
-                    const wpQC = i === 0 ? qcPct : 0;
-
-                    return (
-                      <tr key={wp.id} className="hover:bg-[#F9FBFE]">
-                        <td className="py-3 px-3">
-                          <strong className="text-[#0D255B] block">
-                            {wp.code} · {wp.name}
-                          </strong>
-                          <span className="text-[11px] text-[#596780]">
-                            {wp.zone || "พื้นที่หลัก"} · น้ำหนัก {Number(wp.weight)}%
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-[#596780]">
-                          {Number(wp.target)} {wp.unit}
-                        </td>
-                        <td className="py-3 px-3 min-w-[100px]">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-[#E2EAF4] h-1.5 rounded-full overflow-hidden">
-                              <div
-                                className="bg-[#075DD8] h-full rounded-full"
-                                style={{ width: `${wpDone}%` }}
-                              />
-                            </div>
-                            <span className="text-[11px] font-bold text-[#0D255B]">
-                              {wpDone}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 min-w-[100px]">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-[#E2EAF4] h-1.5 rounded-full overflow-hidden">
-                              <div
-                                className="bg-[#147747] h-full rounded-full"
-                                style={{ width: `${wpQC}%` }}
-                              />
-                            </div>
-                            <span className="text-[11px] font-bold text-[#147747]">
-                              {wpQC}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EAF7F0] text-[#147747]">
-                            {wp.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          <Link
-                            href={`/installation?project=${project.id}`}
-                            className="text-[#075DD8] font-bold text-[11px] hover:underline"
-                          >
-                            เปิดงาน →
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column (Col 4) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Card: ผู้รับผิดชอบหลัก */}
-          <div className="bg-white rounded-xl p-6 border border-[#E4EAF4] shadow-xs space-y-4">
-            <div>
-              <h2 className="text-base font-bold text-[#0D255B]">
-                ผู้รับผิดชอบหลัก
-              </h2>
-              <p className="text-xs text-[#596780] mt-0.5">
-                ทีมงานประจำโครงการและช่องทางประสานงาน
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { role: "ผู้จัดการโครงการ (PM)", name: pmMember },
-                { role: "วิศวกรโครงการ", name: engMember },
-                { role: "วิศวกรหน้างาน", name: siteMember },
-                { role: "ผู้ตรวจคุณภาพ (QC)", name: qcMember },
-                { role: "ผู้ประสานงานคลังและขนส่ง", name: whMember },
-                { role: "ผู้ควบคุมต้นทุน", name: costMember },
-              ].map((p, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#EAF3FF] text-[#075DD8] flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[11px] text-[#596780]">{p.role}</div>
-                    <div className="text-xs font-bold text-[#0D255B] truncate">
-                      {p.name}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Card: รายการที่ต้องดำเนินการ */}
-          <div className="bg-white rounded-xl p-6 border border-[#E4EAF4] shadow-xs space-y-4">
-            <h2 className="text-base font-bold text-[#0D255B]">
-              รายการที่ต้องดำเนินการ
-            </h2>
-
-            <div className="space-y-4 text-xs">
-              <div className="pb-3 border-b border-[#F0F4FA]">
-                <strong className="text-[#0D255B] block">วัสดุและเที่ยวขนส่ง</strong>
-                <p className="text-[#596780] text-[11px] mt-0.5">
-                  ตรวจยอดจัดสรรและกำหนดถึงหน้างาน
-                </p>
-                <Link
-                  href={`/transport?project=${project.id}`}
-                  className="text-[#075DD8] font-bold text-[11px] inline-flex items-center gap-1 mt-1 hover:underline"
-                >
-                  ติดตามการขนส่ง <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-
-              <div className="pb-3 border-b border-[#F0F4FA]">
-                <strong className="text-[#0D255B] block">ตรวจรับและรับรองผลงาน</strong>
-                <p className="text-[#596780] text-[11px] mt-0.5">
-                  พิจารณา IR และติดตามงานแก้ไข
-                </p>
-                <Link
-                  href={`/installation?project=${project.id}`}
-                  className="text-[#075DD8] font-bold text-[11px] inline-flex items-center gap-1 mt-1 hover:underline"
-                >
-                  ดูงานตรวจ QC <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-
-              <div>
-                <strong className="text-[#0D255B] block">เผยแพร่ข้อมูลเจ้าของ</strong>
-                <p className="text-[#596780] text-[11px] mt-0.5">
-                  ตรวจทานฉบับที่จะเผยแพร่
-                </p>
-                <Link
-                  href={`/reports?project=${project.id}`}
-                  className="text-[#075DD8] font-bold text-[11px] inline-flex items-center gap-1 mt-1 hover:underline"
-                >
-                  รายงานโครงการ <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Navigation Cards matching SVG 05 */}
-      <div className="bg-white rounded-xl p-6 border border-[#E4EAF4] shadow-xs">
-        <h2 className="text-sm font-bold text-[#0D255B] mb-3">ดูรายละเอียดเพิ่มเติม</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
-            href={`/planning?project=${project.id}`}
-            className="p-4 rounded-xl border border-[#E4EAF4] hover:border-[#075DD8] hover:bg-[#F9FBFE] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-[#075DD8]" />
-              <span className="text-xs font-bold text-[#0D255B] group-hover:text-[#075DD8]">
-                แผนงานและกำหนดการ
-              </span>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#7086A8] group-hover:text-[#075DD8] group-hover:translate-x-0.5 transition-all" />
-          </Link>
-
-          <Link
-            href={`/materials?project=${project.id}`}
-            className="p-4 rounded-xl border border-[#E4EAF4] hover:border-[#075DD8] hover:bg-[#F9FBFE] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <Package className="w-5 h-5 text-[#075DD8]" />
-              <span className="text-xs font-bold text-[#0D255B] group-hover:text-[#075DD8]">
-                วัสดุและขนส่ง
-              </span>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#7086A8] group-hover:text-[#075DD8] group-hover:translate-x-0.5 transition-all" />
-          </Link>
-
-          <Link
-            href={`/installation?project=${project.id}`}
-            className="p-4 rounded-xl border border-[#E4EAF4] hover:border-[#075DD8] hover:bg-[#F9FBFE] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#075DD8]" />
-              <span className="text-xs font-bold text-[#0D255B] group-hover:text-[#075DD8]">
-                ติดตั้งและตรวจ QC
-              </span>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#7086A8] group-hover:text-[#075DD8] group-hover:translate-x-0.5 transition-all" />
-          </Link>
-
-          <Link
-            href={`/documents?project=${project.id}`}
-            className="p-4 rounded-xl border border-[#E4EAF4] hover:border-[#075DD8] hover:bg-[#F9FBFE] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-[#075DD8]" />
-              <span className="text-xs font-bold text-[#0D255B] group-hover:text-[#075DD8]">
-                เอกสารและรูปภาพ
-              </span>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#7086A8] group-hover:text-[#075DD8] group-hover:translate-x-0.5 transition-all" />
-          </Link>
-        </div>
-      </div>
-      </>
-      )}
-    </div>
+    <ProjectDetailClientView
+      project={projectData}
+      planningProject={planningProject}
+      materialsOverview={materialsOverview}
+      transportTrips={transportTrips}
+      installationData={installationData}
+      financeData={financeData}
+      documentsData={documentsData}
+      photosData={photosData}
+      historyData={historyData}
+      initialTab={initialTab}
+    />
   );
 }

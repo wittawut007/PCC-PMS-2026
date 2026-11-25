@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { SerializedProject, SerializedTask } from "@/app/actions/planning";
 import { TaskDetailModal } from "./TaskDetailModal";
-import { ChevronLeft, ChevronRight, Search, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, CheckCircle2, AlertTriangle, Calendar as CalendarIcon } from "lucide-react";
+import { CallyDatePicker } from "@/components/common/CallyDatePicker";
 import "./planning.css";
 
 const DAY_MS = 86400000;
@@ -170,7 +171,7 @@ export function WorkCalendar({ project, onRefresh }: WorkCalendarProps) {
           </h3>
 
           {/* Navigation */}
-          <div className="pc-navigation">
+          <div className="pc-navigation flex items-center gap-2">
             <button
               type="button"
               onClick={() => movePeriod(-1)}
@@ -191,6 +192,17 @@ export function WorkCalendar({ project, onRefresh }: WorkCalendarProps) {
             <button type="button" onClick={goToToday}>
               วันนี้
             </button>
+            <div className="w-[155px]">
+              <CallyDatePicker
+                value={currentDate.toISOString().slice(0, 10)}
+                onChange={(val) => {
+                  if (val) setCurrentDate(new Date(val + "T00:00:00Z"));
+                }}
+                size="sm"
+                placeholder="เลือกวัน..."
+                align="left"
+              />
+            </div>
           </div>
 
           {/* Filters */}

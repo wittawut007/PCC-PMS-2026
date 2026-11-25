@@ -1,5 +1,6 @@
 "use server";
 
+import { auditedMutation } from "@/lib/project-audit";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { TripStatus } from "@prisma/client";
@@ -225,7 +226,8 @@ export async function recordReceivingAction(data: {
 
     const status = data.badQty > 0 || data.missingQty > 0 ? "PARTIAL" : "COMPLETE";
 
-    await prisma.receivingRecord.upsert({
+  await auditedMutation({ projectId: trip.projectId, action: "RECEIVING_RECORDED", entityId: trip.id, data: { title: "บันทึกผลตรวจรับ", reference: trip.tripNo, ...data, status } }, async tx => {
+    await tx.receivingRecord.upsert({
       where: { tripId: trip.id },
       update: {
         receivedAt: new Date(),
@@ -252,6 +254,9 @@ export async function recordReceivingAction(data: {
         notes: `รับจริง ${data.actualQty} = ดี ${data.goodQty} + เสีย ${data.badQty} • ขาด ${data.missingQty}`,
       },
     });
+
+
+  });
 
     revalidatePath("/transport");
     revalidatePath(`/transport/${trip.tripNo}`);

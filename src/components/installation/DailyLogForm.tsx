@@ -17,6 +17,7 @@ import {
   Clock,
 } from "lucide-react";
 import { createDailyLogAction } from "@/app/actions/installation";
+import { CallyDatePicker } from "@/components/common/CallyDatePicker";
 
 interface DailyLogFormProps {
   project: any;
@@ -110,17 +111,19 @@ export function DailyLogForm({ project, workPackages }: DailyLogFormProps) {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column (8 cols): Form Details */}
         <div className="lg:col-span-8 bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
             <h2 className="text-sm font-bold text-[#132142] flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#075DD8]" />
-              บันทึกวันที่ 12 กันยายน 2569
+              บันทึกประจำวันหน้างาน
             </h2>
-            <input
-              type="date"
-              value={logDate}
-              onChange={(e) => setLogDate(e.target.value)}
-              className="text-xs border border-gray-300 rounded px-2.5 py-1 text-gray-700 font-medium"
-            />
+            <div className="w-full sm:w-auto min-w-[190px]">
+              <CallyDatePicker
+                value={logDate}
+                onChange={(val) => setLogDate(val)}
+                size="sm"
+                align="right"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -318,10 +321,14 @@ export function DailyLogForm({ project, workPackages }: DailyLogFormProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 text-xs font-bold text-white bg-[#075DD8] rounded-lg hover:bg-blue-700 shadow-sm transition flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 text-xs font-bold text-white rounded-xl shadow-md transition flex items-center justify-center gap-1.5 btn-gradient-pcc cursor-pointer"
+              style={{
+                background: "linear-gradient(90deg, #0867e8, #12a77c)",
+                color: "#ffffff",
+              }}
             >
               <Save className="w-4 h-4" />
-              บันทึกผ่านอินเทอร์เน็ต
+              <span>บันทึกผ่านอินเทอร์เน็ต</span>
             </button>
             <button
               type="button"

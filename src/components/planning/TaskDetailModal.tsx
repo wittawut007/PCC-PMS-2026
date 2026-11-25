@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SerializedTask, updateTaskScheduleAction } from "@/app/actions/planning";
 import { X, Calendar, Clock, UserCheck, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import { CallyDatePicker } from "@/components/common/CallyDatePicker";
 
 interface TaskDetailModalProps {
   task: SerializedTask | null;
@@ -125,38 +126,36 @@ export function TaskDetailModal({ task, onClose, onUpdated }: TaskDetailModalPro
 
           {/* Date & Schedule */}
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-start">
               <div>
                 <label className="block text-xs font-semibold text-[#0D255B] mb-1">
                   วันที่เริ่มตามแผน *
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={start}
-                    onChange={(e) => {
-                      setStart(e.target.value);
-                      if (isMilestone) setEnd(e.target.value);
-                    }}
-                    required
-                    className="w-full h-10 px-3 border border-[#D5E4FD] rounded-lg text-xs text-[#0D255B] bg-white focus:border-[#075DD8] outline-none"
-                  />
-                </div>
+                <CallyDatePicker
+                  value={start}
+                  onChange={(val) => {
+                    setStart(val);
+                    if (isMilestone) setEnd(val);
+                  }}
+                  required
+                  size="sm"
+                  align="left"
+                  expandContainer={true}
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#0D255B] mb-1">
                   วันที่สิ้นสุดตามแผน *
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={isMilestone ? start : end}
-                    disabled={isMilestone}
-                    onChange={(e) => setEnd(e.target.value)}
-                    required
-                    className="w-full h-10 px-3 border border-[#D5E4FD] rounded-lg text-xs text-[#0D255B] bg-white disabled:bg-gray-100 disabled:text-gray-500 focus:border-[#075DD8] outline-none"
-                  />
-                </div>
+                <CallyDatePicker
+                  value={isMilestone ? start : end}
+                  disabled={isMilestone}
+                  onChange={(val) => setEnd(val)}
+                  required
+                  size="sm"
+                  align="right"
+                  expandContainer={true}
+                />
               </div>
             </div>
 
@@ -210,7 +209,11 @@ export function TaskDetailModal({ task, onClose, onUpdated }: TaskDetailModalPro
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 text-xs font-bold text-white bg-[#075DD8] hover:bg-[#064eb8] rounded-lg transition shadow-xs disabled:opacity-60"
+              className="px-5 py-2 text-xs font-bold text-white rounded-xl shadow-md transition disabled:opacity-60 btn-gradient-pcc cursor-pointer"
+              style={{
+                background: "linear-gradient(90deg, #0867e8, #12a77c)",
+                color: "#ffffff",
+              }}
             >
               {loading ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
             </button>

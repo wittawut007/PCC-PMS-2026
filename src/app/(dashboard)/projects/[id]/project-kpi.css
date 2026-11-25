@@ -1,0 +1,113 @@
+/* All KPI cards in project detail use the overview card's height. */
+.project-detail-page {
+  --project-kpi-height: 134px;
+  --project-kpi-label-size: 12px;
+  --project-kpi-value-size: clamp(22px, 2vw, 30px);
+  --project-kpi-note-size: 11px;
+}
+.project-detail-page :is(.overview-kpis .card.kpi.pd-kpi, .td-kpis .card.kpi.pd-kpi, .pmat-kpi, .iq-kpi, .pf-kpi, .pdcs-kpi, .pph-kpi) {
+  box-sizing: border-box;
+  height: var(--project-kpi-height);
+  min-height: var(--project-kpi-height);
+  min-width: 0;
+}
+.project-detail-page :is(.td-kpis .card.kpi.pd-kpi, .pmat-kpi, .iq-kpi, .pf-kpi, .pdcs-kpi, .pph-kpi) {
+  padding: 14px 14px 18px;
+  border-radius: 13px;
+}
+.project-detail-page :is(.pmat-kpi, .iq-kpi, .pf-kpi, .pdcs-kpi) {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  column-gap: 10px;
+  row-gap: 0;
+  align-content: start;
+}
+.project-detail-page :is(.pmat-kpi-icon, .iq-kpi > .iq-symbol, .pf-kpi > .pf-symbol, .pdcs-kpi > .pdcs-symbol) {
+  grid-column: 1;
+  grid-row: 1 / 4;
+  align-self: start;
+}
+.project-detail-page :is(.pmat-kpi > span, .iq-kpi > .iq-label, .pf-kpi > .pf-label, .pdcs-kpi > .pdcs-label) {
+  grid-column: 2;
+  grid-row: 1;
+}
+.project-detail-page :is(.pmat-kpi > strong, .iq-kpi > strong, .pf-kpi > strong, .pdcs-kpi > strong) {
+  grid-column: 2;
+  grid-row: 2;
+}
+.project-detail-page :is(.iq-kpi > small, .pf-kpi > small, .pdcs-kpi > small) {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+}
+.project-detail-page :is(.td-kpis .card.kpi.pd-kpi, .pph-kpi) { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; }
+.project-detail-page :is(.td-kpis .pd-kpi-text, .pph-kpi > div) { flex: 1; min-width: 0; }
+.project-detail-page :is(.td-kpis .symbol, .pmat-kpi-icon, .iq-symbol, .pf-symbol, .pdcs-symbol, .pph-symbol) {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  flex-shrink: 0;
+  margin: 0;
+}
+.project-detail-page :is(.overview-kpis .card.kpi.pd-kpi .label, .td-kpis .card.kpi.pd-kpi .label, .pmat-kpi > span, .iq-kpi .iq-label, .pf-kpi .pf-label, .pdcs-kpi .pdcs-label, .pph-kpi .pph-kpi-label) {
+  display: block;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--project-kpi-label-size);
+  line-height: 1.6;
+  font-weight: 600;
+}
+.project-detail-page :is(.overview-kpis .card.kpi.pd-kpi .value, .td-kpis .card.kpi.pd-kpi .value, .pmat-kpi > strong, .iq-kpi > strong, .pf-kpi > strong, .pdcs-kpi > strong, .pph-kpi > div > strong) {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--project-kpi-value-size);
+  line-height: 1.5;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.project-detail-page .pf-kpi > .pf-unit { display: none; }
+.project-detail-page .pmat-kpi > strong small { font-size: inherit; line-height: inherit; font-weight: inherit; }
+.project-detail-page :is(.overview-kpis .card.kpi.pd-kpi .pd-kpi-text > small, .td-kpis .card.kpi.pd-kpi .pd-kpi-text > small, .iq-kpi > small, .pf-kpi > small, .pdcs-kpi > small, .pph-kpi > div > small) {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  min-height: 0;
+  margin: 3px 0 0;
+  padding: 0;
+  font-size: var(--project-kpi-note-size);
+  line-height: 1.5;
+  font-weight: 400;
+}
+.project-detail-page :is(.td-kpis .pd-wave, .pmat-wave, .iq-wave, .pf-wave, .pdcs-wave, .pph-wave) { height: 36px; }
+.project-detail-page .td-kpis .td-receipt-bar { margin-top: 4px; }
+@media (max-width: 760px) {
+  .project-detail-page :is(.overview-kpis, .pmat-summary, .td-kpis, .iq-kpis, .pf-kpis, .pdcs-kpis, .pph-kpis) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Match the overview's starting edge; controls follow the KPI row. */
+.project-detail-page .project-materials {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.project-detail-page .project-materials .pmat-summary { margin-top: 0; }
+.project-detail-page .transport-dashboard-page.td-embedded {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+/* Four project KPIs per tab, with the overview's responsive layout. */
+.project-detail-page :is(.overview-kpis, .pmat-summary, .td-kpis, .iq-kpis, .pf-kpis, .pdcs-kpis, .pph-kpis) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 1100px) {
+  .project-detail-page :is(.overview-kpis, .pmat-summary, .td-kpis, .iq-kpis, .pf-kpis, .pdcs-kpis, .pph-kpis) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .project-detail-page :is(.overview-kpis, .pmat-summary, .td-kpis, .iq-kpis, .pf-kpis, .pdcs-kpis, .pph-kpis) { grid-template-columns: minmax(0, 1fr); }
+}

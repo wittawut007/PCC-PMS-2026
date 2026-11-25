@@ -1,5 +1,6 @@
 "use server";
 
+import { auditedMutation } from "@/lib/project-audit";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { RecordStatus, ProductionStatus } from "@prisma/client";
@@ -315,7 +316,8 @@ export async function createMaterialRequestAction(formData: {
     const count = await prisma.materialRequest.count();
     const requestNo = `REQ-26${String(count + 1).padStart(4, "0")}`;
 
-    const mr = await prisma.materialRequest.create({
+    const mr = await auditedMutation({ projectId: formData.projectId, action: "MATERIAL_REQUEST_CREATED", data: { title: "สร้างคำขอวัสดุ", reference: requestNo, ...formData } }, async tx => {
+    return await tx.materialRequest.create({
       data: {
         requestNo,
         projectId: formData.projectId,
@@ -336,6 +338,8 @@ export async function createMaterialRequestAction(formData: {
           })),
         },
       },
+    });
+
     });
 
     revalidatePath("/materials");
@@ -421,13 +425,14 @@ export async function recordWarehouseResponseAction(
 
     if (!mr) throw new Error("ไม่พบคำขอเบิกวัสดุ");
 
+  await auditedMutation({ projectId: mr.projectId, action: "WAREHOUSE_CONFIRMED", entityId: mr.id, data: { title: "บันทึกผลจัดสรรจากคลัง", reference: mr.requestNo, ...data } }, async tx => {
     // Update items allocated and shortage
     if (data.allocatedQuantities) {
       for (const item of mr.items) {
         if (data.allocatedQuantities[item.itemCode] !== undefined) {
           const alloc = data.allocatedQuantities[item.itemCode];
           const qty = Number(item.quantity);
-          await prisma.materialRequestItem.update({
+          await tx.materialRequestItem.update({
             where: { id: item.id },
             data: {
               allocated: alloc,
@@ -439,7 +444,7 @@ export async function recordWarehouseResponseAction(
       }
     }
 
-    await prisma.materialRequest.update({
+    await tx.materialRequest.update({
       where: { id: requestId },
       data: {
         externalRef: data.externalRef,
@@ -452,6 +457,9 @@ export async function recordWarehouseResponseAction(
         status: RecordStatus.APPROVED,
       },
     });
+
+
+  });
 
     revalidatePath("/materials");
     revalidatePath(`/materials/dispatch/${requestId}`);

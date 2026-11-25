@@ -1,0 +1,121 @@
+.installation-timeline { min-width: 0; color: #173263; }
+.installation-timeline * { box-sizing: border-box; }
+.installation-timeline .iq-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.installation-timeline h1, .installation-timeline h2 { font-size: 24px; font-weight: 750; margin: 5px 0 8px; color: #102e60; }
+.installation-timeline h3 { font-size: 19px; font-weight: 700; margin: 0 0 6px; }
+.installation-timeline h4 { font-size: 16px; font-weight: 700; line-height: 1.6; margin: 3px 0; }
+.installation-timeline p { font-size: 14px; line-height: 1.8; margin: 6px 0; overflow-wrap: anywhere; }
+.installation-timeline .iq-heading p, .installation-timeline .iq-section-title p { color: #71829e; margin: 0; }
+.installation-timeline .iq-eyebrow { font-size: 12px; font-weight: 650; letter-spacing: .4px; color: #647fa5; }
+.installation-timeline .iq-link, .installation-timeline .iq-actions a { color: #075dd8; font-size: 14px; font-weight: 600; }
+.installation-timeline .iq-link:hover, .installation-timeline .iq-actions a:hover { text-decoration: underline; }
+.installation-timeline .iq-project-picker { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #71829e; max-width: 100%; }
+.installation-timeline select { background: white; border: 1px solid #d9e4f3; border-radius: 9px; padding: 11px 14px; color: #173263; font-size: 14px; max-width: 100%; min-width: 0; }
+.installation-timeline .iq-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.installation-timeline .iq-kpi { --iq-color: #1675ff; --iq-tint: #eaf3ff; position: relative; isolation: isolate; overflow: hidden; background: white; border: 1px solid #dbe5f4; border-radius: 16px; padding: 22px; box-shadow: 0 3px 8px #102e6005; min-width: 0; }
+.installation-timeline .iq-kpi-green { --iq-color: #009b6d; --iq-tint: #e6f7f0; }
+.installation-timeline .iq-kpi-orange { --iq-color: #df7900; --iq-tint: #fff3e4; }
+.installation-timeline .iq-kpi-red { --iq-color: #e82f4b; --iq-tint: #ffedf1; }
+.installation-timeline .iq-symbol { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--iq-tint); color: var(--iq-color); margin-bottom: 12px; }
+.installation-timeline .iq-label { display: block; font-size: 14px; font-weight: 600; color: #577098; }
+.installation-timeline .iq-kpi strong { display: block; font-size: 38px; font-weight: 750; color: var(--iq-color); line-height: 1.4; margin: 5px 0; }
+.installation-timeline .iq-kpi small { display: block; font-size: 12px; color: #647fa5; padding-bottom: 10px; }
+.installation-timeline .iq-wave { position: absolute; bottom: 0; left: 0; height: 43px; width: 100%; z-index: -1; fill: var(--iq-tint); }
+.installation-timeline .iq-controls { display: flex; align-items: stretch; gap: 12px; margin-bottom: 18px; }
+.installation-timeline .iq-search { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; border: 1px solid #d9e4f3; background: white; border-radius: 9px; padding: 0 14px; color: #8195b4; }
+.installation-timeline .iq-search input { width: 100%; min-width: 0; border: 0; background: transparent; padding: 12px 0; outline: none; font-size: 14px; color: #173263; }
+.installation-timeline .iq-search:focus-within { border-color: #1675ff; box-shadow: 0 0 0 2px #1675ff20; }
+.installation-timeline .iq-controls select { width: 340px; }
+.installation-timeline .iq-tabs { display: flex; gap: 8px; border-bottom: 1px solid #dce5f4; margin-bottom: 24px; overflow-x: auto; }
+.installation-timeline .iq-tabs button { display: flex; align-items: center; gap: 8px; white-space: nowrap; padding: 13px 16px; color: #6a7f9f; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; cursor: pointer; }
+.installation-timeline .iq-tabs button:hover { background: #eaf3ff; }
+.installation-timeline .iq-tabs .iq-active { color: #075dd8; border-bottom-color: #1675ff; }
+.installation-timeline .iq-tabs button span { font-size: 12px; background: #eaf0f9; border-radius: 20px; padding: 1px 7px; }
+.installation-timeline .iq-panel { padding: 24px; border-radius: 14px; border: 1px solid #dce5f4; background: white; }
+.installation-timeline .iq-section-title { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; }
+.installation-timeline .iq-section-title > span { white-space: nowrap; font-size: 13px; color: #71829e; }
+.installation-timeline .iq-package { background: white; border: 1px solid #dce5f4; border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+.installation-timeline .iq-package summary { list-style: none; cursor: pointer; padding: 22px 24px; display: flex; align-items: center; gap: 24px; }
+.installation-timeline .iq-package summary::-webkit-details-marker { display: none; }
+.installation-timeline .iq-package summary:hover { background: #f4f8ff; }
+.installation-timeline .iq-package-name { flex: 1; min-width: 0; }
+.installation-timeline .iq-package-name p { color: #71829e; }
+.installation-timeline .iq-package-progress { width: 330px; max-width: 100%; }
+.installation-timeline .iq-package-progress small { color: #71829e; font-size: 12px; }
+.installation-timeline .iq-progress { margin-bottom: 12px; }
+.installation-timeline .iq-progress > div:first-child { display: flex; justify-content: space-between; font-size: 13px; color: #607b9f; margin-bottom: 5px; }
+.installation-timeline .iq-progress b { color: #075dd8; font-size: 16px; }
+.installation-timeline .iq-track { height: 7px; background: #edf2fa; border-radius: 12px; overflow: hidden; }
+.installation-timeline .iq-track i { height: 100%; display: block; background: #1675ff; border-radius: inherit; }
+.installation-timeline .iq-qc .iq-track i { background: #05a172; }
+.installation-timeline .iq-qc b { color: #00956a; }
+.installation-timeline .iq-chevron { color: #71829e; flex-shrink: 0; }
+.installation-timeline details[open] > summary .iq-chevron { transform: rotate(180deg); }
+.installation-timeline .iq-package-body { padding: 24px; border-top: 1px solid #e3eaf5; }
+.installation-timeline .iq-timeline { padding: 0; margin: 0; list-style: none; }
+.installation-timeline .iq-entry { position: relative; padding: 0 0 22px 44px; --iq-dot: #8d9fb8; }
+.installation-timeline .iq-entry::before { content: ""; position: absolute; left: 15px; top: 27px; bottom: -3px; width: 2px; background: #e0e8f3; }
+.installation-timeline .iq-entry:last-child::before { display: none; }
+.installation-timeline .iq-entry:last-child { padding-bottom: 0; }
+.installation-timeline .iq-entry-green { --iq-dot: #009b6d; }
+.installation-timeline .iq-entry-orange { --iq-dot: #dc850c; }
+.installation-timeline .iq-entry-red { --iq-dot: #df3b50; }
+.installation-timeline .iq-node { position: absolute; left: 0; top: 2px; background: white; border: 2px solid var(--iq-dot); color: var(--iq-dot); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.installation-timeline .iq-entry article { padding: 16px 20px; border: 1px solid #e1e8f3; background: #fff; border-radius: 12px; min-width: 0; }
+.installation-timeline .iq-entry-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; }
+.installation-timeline .iq-code { color: #6a82a4; font-size: 12px; }
+.installation-timeline .iq-badge { display: inline-block; font-size: 12px; line-height: 1.7; font-weight: 650; border-radius: 6px; padding: 4px 9px; flex-shrink: 0; max-width: 100%; }
+.installation-timeline .iq-green { color: #047857; background: #e7f8f0; }
+.installation-timeline .iq-orange { color: #9a5700; background: #fff4e5; }
+.installation-timeline .iq-red { color: #c33249; background: #fff0f2; }
+.installation-timeline .iq-gray { color: #526580; background: #f0f4f9; }
+.installation-timeline .iq-dates, .installation-timeline .iq-facts { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 13px; color: #6c7f9b; margin: 10px 0; }
+.installation-timeline .iq-facts b { font-weight: 500; color: #173263; }
+.installation-timeline .iq-muted { color: #71829e; font-size: 12px; }
+.installation-timeline .iq-condition { display: flex; gap: 10px; background: #f4f8ff; border-radius: 8px; padding: 12px 14px; margin: 14px 0; font-size: 13px; color: #31578d; }
+.installation-timeline .iq-condition svg { flex-shrink: 0; margin-top: 3px; }
+.installation-timeline .iq-condition p { margin: 2px 0 0; }
+.installation-timeline .iq-task-log { font-size: 13px; border-top: 1px dashed #dce5f4; margin-top: 12px; padding-top: 12px; }
+.installation-timeline .iq-checklist { list-style: none; padding: 0; margin: 14px 0; border: 1px solid #e2eaf5; border-radius: 8px; overflow: hidden; }
+.installation-timeline .iq-checklist li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #e2eaf5; }
+.installation-timeline .iq-checklist li:last-child { border: 0; }
+.installation-timeline .iq-checklist small { display: block; font-size: 12px; color: #71829e; }
+.installation-timeline .iq-checklist b { white-space: nowrap; }
+.installation-timeline .iq-actions { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 15px; }
+.installation-timeline .iq-issue { background: #fff5e9; color: #ad670c; border-radius: 8px; padding: 10px 14px; }
+.installation-timeline .iq-ncr { padding: 20px 0; border-top: 1px solid #e2eaf5; }
+.installation-timeline .iq-empty { text-align: center; background: #f8fbff; border: 1px dashed #dce5f4; border-radius: 12px; padding: 40px 20px; font-size: 14px; color: #71829e; }
+.installation-timeline .iq-footnote { font-size: 12px; color: #71829e; }
+@media (max-width: 1100px) { .installation-timeline .iq-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+ .installation-timeline .iq-controls { flex-direction: column; }
+ .installation-timeline .iq-controls select { width: 100%; }
+ .installation-timeline .iq-package summary { flex-wrap: wrap; padding: 18px; gap: 15px; }
+ .installation-timeline .iq-package-name { flex-basis: calc(100% - 40px); }
+ .installation-timeline .iq-package-progress { width: 100%; order: 3; }
+ .installation-timeline .iq-panel, .installation-timeline .iq-package-body { padding: 16px; }
+ .installation-timeline .iq-entry { padding-left: 36px; }
+ .installation-timeline .iq-entry article { padding: 14px; }
+ .installation-timeline .iq-entry-heading { flex-direction: column; gap: 5px; }
+ .installation-timeline .iq-kpi { padding: 16px; }
+ .installation-timeline .iq-kpi strong { font-size: 32px; }
+}
+
+.installation-timeline .iq-add-log { display: flex; align-items: center; justify-content: center; background: #075dd8; color: white; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 9px; white-space: nowrap; }
+.installation-timeline .iq-add-log:hover { background: #004ab3; }
+
+.installation-timeline .iq-source { display: inline-block; color: #647fa5; background: #f2f6fc; border-radius: 5px; padding: 3px 8px; font-size: 12px; margin-top: 5px; }
+
+.installation-timeline .iq-blue { color: #075dd8; background: #eaf3ff; }
+.installation-timeline .iq-teal { color: #0e7490; background: #ecfeff; }
+.installation-timeline .iq-purple { color: #6941a5; background: #f3edff; }
+.installation-timeline .iq-entry-blue { --iq-dot: #075dd8; }
+.installation-timeline .iq-entry-teal { --iq-dot: #0e7490; }
+.installation-timeline .iq-entry-purple { --iq-dot: #6941a5; }
+
+.installation-timeline .iq-gate-statuses { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; max-width: 100%; }
+.installation-timeline .iq-gate-statuses > div { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.installation-timeline .iq-gate-statuses > div > span:first-child { color: #71829e; font-size: 12px; }
+@media (max-width: 760px) { .installation-timeline .iq-gate-statuses { align-items: flex-start; } .installation-timeline .iq-gate-statuses > div { justify-content: flex-start; } }
+
+.installation-timeline .iq-tab-actions { justify-content: flex-end; }

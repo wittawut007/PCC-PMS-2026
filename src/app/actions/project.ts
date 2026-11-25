@@ -165,6 +165,7 @@ export async function createProjectAction(input: CreateProjectInput) {
       }
     }
 
+    await tx.auditLog.create({ data: { userId: session.user.id, projectId: project.id, entityId: project.id, action: "PROJECT_CREATED", data: { title: project.name, reference: project.code, packageCount: input.packages.length, contractNo } } });
     return project;
   });
 

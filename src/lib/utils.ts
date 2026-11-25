@@ -58,3 +58,56 @@ export const userRoleLabel: Record<string, string> = {
   OWNER: "เจ้าของโครงการ",
   STAFF: "พนักงาน",
 };
+
+/** Get abbreviated role badge string (e.g. PM, AD, EX, EN, SE, QC, WH, TR, OW) */
+export function getRoleAbbr(role?: string | null, name?: string | null): string {
+  switch (role) {
+    case "PM":
+      return "PM";
+    case "SYSTEM_ADMIN":
+      return "AD";
+    case "EXECUTIVE":
+      return "EX";
+    case "ENGINEER":
+      return "EN";
+    case "SITE_ENGINEER":
+      return "SE";
+    case "QC_INSPECTOR":
+      return "QC";
+    case "WAREHOUSE":
+      return "WH";
+    case "TRANSPORT":
+      return "TR";
+    case "OWNER":
+      return "OW";
+    default:
+      return name?.[0]?.toUpperCase() ?? "U";
+  }
+}
+
+/** Get full descriptive role title (e.g. PM / Project Manager) */
+export function getRoleFullTitle(role?: string | null): string {
+  switch (role) {
+    case "PM":
+      return "PM / Project Manager";
+    case "SYSTEM_ADMIN":
+      return "Admin / ผู้ดูแลระบบ";
+    case "EXECUTIVE":
+      return "Executive / ผู้บริหาร";
+    case "ENGINEER":
+      return "Project Engineer / วิศวกรโครงการ";
+    case "SITE_ENGINEER":
+      return "Site Engineer / วิศวกรหน้างาน";
+    case "QC_INSPECTOR":
+      return "QC / Inspector";
+    case "WAREHOUSE":
+      return "Warehouse / คลังสินค้า";
+    case "TRANSPORT":
+      return "Transport / เจ้าหน้าที่ขนส่ง";
+    case "OWNER":
+      return "Owner / เจ้าของโครงการ";
+    default:
+      return role ? (userRoleLabel[role] ?? role) : "";
+  }
+}
+

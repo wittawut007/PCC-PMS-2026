@@ -1,0 +1,94 @@
+.project-finance { min-width: 0; color: #173263; }
+.project-finance * { box-sizing: border-box; }
+.project-finance h1, .project-finance h2 { font-size: 24px; font-weight: 750; margin: 5px 0 8px; color: #102e60; }
+.project-finance h3 { display: flex; align-items: center; gap: 9px; font-size: 18px; font-weight: 700; margin: 0; }
+.project-finance h4 { font-size: 15px; font-weight: 700; margin: 5px 0 8px; }
+.project-finance p { font-size: 14px; line-height: 1.8; margin: 6px 0; overflow-wrap: anywhere; }
+.project-finance .pf-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+.project-finance .pf-heading p, .project-finance .pf-panel-title p { color: #71829e; margin: 4px 0 0; }
+.project-finance .pf-eyebrow { color: #6a82a4; font-size: 12px; font-weight: 650; letter-spacing: .4px; }
+.project-finance .pf-link { font-size: 14px; font-weight: 600; color: #075dd8; }
+.project-finance .pf-link:hover { text-decoration: underline; }
+.project-finance .pf-project-picker { display: flex; flex-direction: column; gap: 5px; max-width: 100%; color: #71829e; font-size: 13px; }
+.project-finance select { min-width: 0; max-width: 100%; border: 1px solid #dce5f4; background: white; border-radius: 9px; padding: 11px 14px; color: #173263; font-size: 14px; }
+.project-finance .pf-kpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin-bottom: 24px; }
+.project-finance .pf-kpi { --pf-color: #1675ff; --pf-tint: #eaf3ff; background: white; border: 1px solid #dce5f4; border-radius: 16px; padding: 22px; position: relative; isolation: isolate; overflow: hidden; min-width: 0; box-shadow: 0 3px 8px #102e6005; }
+.project-finance .pf-kpi-green { --pf-color: #009b6d; --pf-tint: #e6f7f0; }
+.project-finance .pf-kpi-purple { --pf-color: #7745df; --pf-tint: #f2edff; }
+.project-finance .pf-kpi-orange { --pf-color: #df7900; --pf-tint: #fff3e4; }
+.project-finance .pf-kpi-red { --pf-color: #dc3650; --pf-tint: #fff0f2; }
+.project-finance .pf-symbol { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--pf-tint); color: var(--pf-color); border-radius: 50%; margin-bottom: 12px; }
+.project-finance .pf-label { display: block; color: #577098; font-size: 14px; font-weight: 600; }
+.project-finance .pf-kpi strong { display: block; font-size: clamp(24px,2vw,34px); font-weight: 750; line-height: 1.5; color: var(--pf-color); margin: 7px 0 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.project-finance .pf-unit { font-size: 13px; color: #647fa5; }
+.project-finance .pf-kpi small { display: block; font-size: 12px; color: #647fa5; margin-top: 10px; padding-bottom: 9px; }
+.project-finance .pf-wave { position: absolute; bottom: 0; left: 0; width: 100%; height: 43px; z-index: -1; fill: var(--pf-tint); }
+.project-finance .pf-panel { min-width: 0; border: 1px solid #dce5f4; border-radius: 14px; padding: 24px; background: white; margin-bottom: 20px; }
+.project-finance .pf-panel-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.project-finance .pf-summary-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.project-finance .pf-tag { color: #047857; background: #e7f8f0; font-size: 12px; border-radius: 20px; padding: 4px 10px; white-space: nowrap; }
+.project-finance .pf-tag-orange { color: #b56a09; background: #fff4e5; }
+.project-finance .pf-incoming-total, .project-finance .pf-outgoing-total { padding: 16px 20px; background: #f1fbf6; border-radius: 10px; margin-bottom: 16px; }
+.project-finance .pf-outgoing-total { background: #fff7ed; }
+.project-finance .pf-incoming-total > span, .project-finance .pf-outgoing-total > span { display: block; font-size: 13px; color: #6a82a4; margin-bottom: 6px; }
+.project-finance .pf-incoming-total > strong, .project-finance .pf-outgoing-total > strong { color: #047857; font-size: 27px; font-weight: 750; overflow-wrap: anywhere; }
+.project-finance .pf-outgoing-total > strong { color: #b76b08; }
+.project-finance .pf-track { background: #edf2fa; height: 7px; border-radius: 8px; overflow: hidden; margin: 9px 0; }
+.project-finance .pf-track i { display: block; height: 100%; border-radius: inherit; background: #1675ff; }
+.project-finance .pf-incoming-total + .pf-track i { background: #05a172; }
+.project-finance .pf-ledger { margin: 0; }
+.project-finance .pf-ledger > div { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; border-bottom: 1px solid #edf1f7; padding: 11px 0; font-size: 14px; }
+.project-finance .pf-ledger dt { color: #7084a3; }
+.project-finance .pf-ledger dd { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0; }
+.project-finance .pf-cash { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 14px 16px; border-radius: 9px; background: #f4f8ff; margin-top: 14px; font-size: 14px; }
+.project-finance .pf-cash strong { font-size: 18px; }
+.project-finance .pf-note { font-size: 12px; line-height: 1.8; color: #71829e; margin: 14px 0 0; }
+.project-finance .pf-muted { color: #71829e; font-size: 12px; }
+.project-finance .pf-danger { color: #d42d48 !important; }
+.project-finance .pf-positive { color: #04865f; }
+.project-finance .pf-contracts { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,360px),1fr)); gap: 16px; }
+.project-finance .pf-contract { min-width: 0; background: #f8fbff; border: 1px solid #e2eaf5; padding: 20px; border-radius: 12px; }
+.project-finance .pf-contract > div p { font-size: 12px; color: #71829e; }
+.project-finance .pf-contract dl > div { display: flex; justify-content: space-between; gap: 20px; padding: 8px 0; font-size: 14px; }
+.project-finance .pf-contract dt { color: #71829e; }
+.project-finance .pf-contract dd { text-align: right; margin: 0; }
+.project-finance .pf-table-wrap { overflow-x: auto; }
+.project-finance table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+.project-finance .pf-budget-table { min-width: 1050px; }
+.project-finance .pf-period-table { min-width: 1100px; }
+.project-finance th { background: #f1f6ff; color: #5777a3; font-weight: 650; padding: 16px 14px; font-size: 13px; white-space: nowrap; }
+.project-finance td { padding: 20px 14px; border-bottom: 1px solid #dde6f3; vertical-align: top; line-height: 1.7; font-variant-numeric: tabular-nums; }
+.project-finance tbody tr:hover > td { background: #f7faff; }
+.project-finance td strong, .project-finance td b { font-size: 15px; font-weight: 650; }
+.project-finance td small { display: block; color: #71829e; font-size: 12px; margin-top: 6px; }
+.project-finance td:first-child { min-width: 195px; }
+.project-finance tfoot { font-weight: 700; background: #f5f8ff; }
+.project-finance .pf-controls { display: flex; gap: 12px; margin-bottom: 18px; }
+.project-finance .pf-search { min-width: 0; display: flex; flex: 1; align-items: center; gap: 10px; border: 1px solid #dce5f4; background: white; border-radius: 9px; padding: 0 14px; color: #8195b4; }
+.project-finance .pf-search input { width: 100%; min-width: 0; padding: 12px 0; border: 0; background: transparent; outline: none; color: #173263; font-size: 14px; }
+.project-finance .pf-search:focus-within { border-color: #1675ff; box-shadow: 0 0 0 2px #1675ff20; }
+.project-finance .pf-status { display: inline-block; border-radius: 6px; padding: 5px 9px; background: #eaf3ff; color: #075dd8; font-size: 12px; font-weight: 600; }
+.project-finance .pf-status-red { background: #fff0f2; color: #c33249; }
+.project-finance .pf-status-green { background: #e7f8f0; color: #047857; }
+.project-finance .pf-details-toggle { color: #075dd8; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; font-weight: 600; cursor: pointer; }
+.project-finance .pf-period-details { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; background: #f7faff; padding: 20px; border-radius: 10px; }
+.project-finance .pf-period-details p { font-size: 13px; }
+.project-finance .pf-period-details .pf-ledger > div { font-size: 13px; }
+.project-finance .pf-due-item { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid #e2eaf5; }
+.project-finance .pf-due-item > div { flex: 1; }
+.project-finance .pf-due-item strong { font-size: 14px; }
+.project-finance .pf-due-item p { color: #71829e; font-size: 12px; margin: 3px 0; }
+.project-finance .pf-due-item > b { text-align: right; font-size: 15px; }
+.project-finance .pf-due-dot { width: 10px; height: 10px; flex-shrink: 0; border-radius: 50%; background: #1675ff; }
+.project-finance .pf-dot-red { background: #df3b50; }
+.project-finance .pf-payment { padding: 14px 0; border-bottom: 1px solid #e2eaf5; }
+.project-finance .pf-payment > div { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+.project-finance .pf-payment strong { color: #047857; font-size: 17px; }
+.project-finance .pf-payment span, .project-finance .pf-payment small { font-size: 12px; color: #71829e; }
+.project-finance .pf-payment p { font-size: 13px; margin: 4px 0; }
+.project-finance .pf-empty { text-align: center; border: 1px dashed #dce5f4; border-radius: 10px; background: #f8fbff; padding: 30px 20px; color: #71829e; font-size: 14px; }
+.project-finance .pf-notice { border-radius: 10px; padding: 14px 18px; font-size: 14px; background: #fff5e8; color: #a16207; margin-bottom: 20px; }
+@media (max-width: 1150px) { .project-finance .pf-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } .project-finance .pf-summary-grid { grid-template-columns: minmax(0,1fr); gap: 0; } }
+@media (max-width: 760px) { .project-finance .pf-panel { padding: 16px; } .project-finance .pf-kpi { padding: 16px; } .project-finance .pf-kpi strong { font-size: 25px; } .project-finance .pf-controls { flex-direction: column; } .project-finance .pf-panel-title { flex-wrap: wrap; } .project-finance .pf-ledger > div { gap: 12px; } .project-finance .pf-due-item { flex-wrap: wrap; } .project-finance .pf-due-item > b { padding-left: 22px; } }
+
+.project-finance .pf-data-note { background: #eff6ff; border: 1px solid #dce9fb; border-radius: 10px; padding: 12px 16px; color: #52749f; font-size: 13px; margin-bottom: 20px; line-height: 1.8; }

@@ -1,0 +1,525 @@
+/* Costs Dashboard CSS - Matching website-demo & PCC PMS Phase 4 Design System */
+
+.costs-dashboard-page {
+  min-width: 0;
+  color: #0c2340;
+}
+
+/* Module Detail Back Banner */
+.module-detail-back {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #edf4ff;
+  border: 1px solid #dce9fb;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.module-detail-back button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #e3e8f1;
+  color: #075dd8;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.module-detail-back button:hover {
+  background: #f5f8fd;
+  border-color: #bbd3f8;
+  color: #064bb0;
+}
+
+.module-detail-back span {
+  font-size: 13px;
+  color: #6581a5;
+  font-weight: 500;
+}
+
+/* Page Heading & Scope Selector */
+.cost-page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.cost-page-heading .heading-text h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0c2340;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.cost-page-heading .heading-text p {
+  font-size: 13px;
+  color: #627d98;
+  margin: 4px 0 0;
+}
+
+.cost-heading-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cost-project-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #dce5f5;
+  border-radius: 9px;
+  padding: 6px 12px;
+  box-shadow: 0 1px 3px rgba(10, 37, 64, 0.04);
+}
+
+.cost-project-filter label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #50719c;
+}
+
+.cost-project-filter select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #142d61;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+/* 6 Financial KPIs with Wave Pattern */
+.cost-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.cost-metrics .card.kpi.pd-kpi {
+  --kpi-ink: #0a285d;
+  --kpi-accent: #1675ff;
+  --kpi-tint: #e9f2ff;
+  --kpi-wave: #eef5ff;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  min-height: 124px;
+  padding: 16px 12px 30px;
+  border: 1px solid #dfe9f7;
+  border-radius: 13px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(10, 37, 64, 0.04);
+  text-align: left;
+  appearance: none;
+  font: inherit;
+  color: #34507c;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.cost-metrics .card.kpi.pd-kpi.blue {
+  --kpi-ink: #0a285d;
+  --kpi-accent: #1675ff;
+  --kpi-tint: #e9f2ff;
+  --kpi-wave: #eef5ff;
+}
+
+.cost-metrics .card.kpi.pd-kpi.green {
+  --kpi-ink: #04814f;
+  --kpi-accent: #059465;
+  --kpi-tint: #e7f7ef;
+  --kpi-wave: #edf9f3;
+}
+
+.cost-metrics .card.kpi.pd-kpi.orange {
+  --kpi-ink: #bb6900;
+  --kpi-accent: #e48614;
+  --kpi-tint: #fff3e4;
+  --kpi-wave: #fff7ee;
+}
+
+.cost-metrics .card.kpi.pd-kpi.red {
+  --kpi-ink: #d52437;
+  --kpi-accent: #ed3446;
+  --kpi-tint: #ffedef;
+  --kpi-wave: #fff0f2;
+}
+
+.cost-metrics .card.kpi.pd-kpi.purple {
+  --kpi-ink: #6033c8;
+  --kpi-accent: #7745df;
+  --kpi-tint: #f0eaff;
+  --kpi-wave: #f5f0ff;
+}
+
+.cost-metrics .card.kpi.pd-kpi .symbol {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  margin: 0;
+  border-radius: 50%;
+  color: var(--kpi-accent);
+  background: var(--kpi-tint);
+}
+
+.cost-metrics .card.kpi.pd-kpi .symbol svg {
+  width: 19px;
+  height: 19px;
+}
+
+.cost-metrics .card.kpi.pd-kpi .pd-kpi-text {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1;
+}
+
+.cost-metrics .card.kpi.pd-kpi .label {
+  display: block;
+  margin: 0;
+  min-height: 18px;
+  font-size: 11px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #34507c;
+}
+
+.cost-metrics .card.kpi.pd-kpi .value {
+  display: block;
+  margin: 0;
+  font-size: clamp(17px, 1.35vw, 22px);
+  line-height: 1.35;
+  font-weight: 800;
+  color: var(--kpi-ink);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.cost-metrics .card.kpi.pd-kpi small {
+  display: block;
+  margin: 3px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #6e86aa;
+  overflow-wrap: anywhere;
+}
+
+.cost-metrics .card.kpi.pd-kpi .pd-wave {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 32px;
+  fill: var(--kpi-wave);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Section Title */
+.finance-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin: 24px 0 14px;
+  border-bottom: 1px solid #e1e9f5;
+  padding-bottom: 8px;
+}
+
+.finance-section-title h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0c2340;
+  margin: 0;
+}
+
+.finance-section-title span {
+  font-size: 12px;
+  color: #7185a4;
+  font-weight: 500;
+}
+
+/* 2-Column Grids */
+.finance-grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.finance-card {
+  background: white;
+  border: 1px solid #dfe9f7;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(10, 37, 64, 0.04);
+}
+
+.finance-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.finance-card-head h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0c2340;
+  margin: 0;
+}
+
+/* Ring / Donut Layout */
+.finance-ring-layout {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin: 12px 0;
+}
+
+.finance-ring {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+
+.finance-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.finance-ring > div {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.finance-ring strong {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0c2340;
+  line-height: 1;
+}
+
+.finance-ring small {
+  font-size: 11px;
+  color: #7185a4;
+  margin-top: 4px;
+}
+
+.finance-ring-key {
+  display: grid;
+  gap: 10px;
+  flex: 1;
+}
+
+.finance-ring-key > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f4fa;
+}
+
+.finance-ring-key span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #486581;
+}
+
+.finance-ring-key i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.finance-ring-key b {
+  color: #0c2340;
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-ring-key small {
+  font-size: 11px;
+  color: #7185a4;
+  margin-left: 6px;
+}
+
+/* Category Progress Bars */
+.cost-bars {
+  display: grid;
+  gap: 14px;
+  margin: 12px 0;
+}
+
+.cost-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.cost-bar-label span {
+  color: #486581;
+  font-weight: 500;
+}
+
+.cost-bar-label b {
+  color: #0c2340;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-bar-track {
+  width: 100%;
+  height: 8px;
+  background: #edf2f9;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cost-bar-track i {
+  height: 100%;
+  display: block;
+  border-radius: 6px;
+}
+
+/* Monthly Trend Chart */
+.cost-trend-chart {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  margin: 10px 0;
+}
+
+.cost-trend-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #627d98;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.cost-trend-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cost-trend-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* Invoices Table Card */
+.invoices-card {
+  background: white;
+  border: 1px solid #dfe9f7;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(10, 37, 64, 0.04);
+  margin-top: 20px;
+}
+
+.invoices-card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0c2340;
+  margin: 0 0 14px;
+}
+
+.invoices-table-wrap {
+  overflow-x: auto;
+}
+
+.invoices-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.invoices-table th {
+  background: #f8fafc;
+  color: #486581;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e1e9f5;
+  white-space: nowrap;
+}
+
+.invoices-table td {
+  padding: 14px;
+  border-bottom: 1px solid #edf2f9;
+  vertical-align: middle;
+}
+
+.invoices-table td small {
+  display: block;
+  font-size: 11px;
+  color: #7185a4;
+  margin-top: 3px;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .cost-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .finance-grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .cost-page-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cost-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .finance-ring-layout {
+    flex-direction: column;
+  }
+}

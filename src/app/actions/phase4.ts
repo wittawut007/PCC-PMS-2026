@@ -1,5 +1,6 @@
 "use server";
 
+import { auditedMutation } from "@/lib/project-audit";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -326,10 +327,16 @@ export async function updateHandoverItemStatusAction(id: string, status: string,
     throw new Error("กรุณาเข้าสู่ระบบก่อนทำรายการ");
   }
 
-  const updated = await prisma.handoverItem.update({
+  const updated = await auditedMutation({ projectId: (await prisma.handoverItem.findUniqueOrThrow({ where: { id } })).projectId, action: "HANDOVER_UPDATED", entityId: id, data: { title: "ปรับสถานะส่งมอบงาน", status, statusLabel } }, async tx => {
+  const updated = await tx.handoverItem.update({
     where: { id },
     data: { status, statusLabel, statusTone },
   });
+
+    return updated;
+
+  });
+
   revalidatePath("/handover");
   return updated;
 }
@@ -513,7 +520,8 @@ export async function processApprovalTaskAction(taskId: string, action: "APPROVE
     throw new Error("ไม่อนุญาตให้อนุมัติรายการที่ตนเองเป็นผู้ยื่นขอ (Segregation of Duties)");
   }
 
-  const updated = await prisma.approvalTask.update({
+  const updated = await auditedMutation({ projectId: task.projectId, action: action === "APPROVE" ? "APPROVE_TASK" : "REJECT_TASK", entityId: taskId, data: { title: task.title, reference: task.requestCode, before: { status: task.status }, after: { status: action === "APPROVE" ? "APPROVED" : "REJECTED", comment: comment || null } } }, async tx => {
+  const updated = await tx.approvalTask.update({
     where: { id: taskId },
     data: {
       status: action === "APPROVE" ? "APPROVED" : "REJECTED",
@@ -523,28 +531,8 @@ export async function processApprovalTaskAction(taskId: string, action: "APPROVE
     },
   });
 
-  // Create Audit Log
-  try {
-    if (session.user.id) {
-      await prisma.auditLog.create({
-        data: {
-          userId: session.user.id,
-          action: action === "APPROVE" ? "APPROVE_TASK" : "REJECT_TASK",
-          entityId: taskId,
-          projectId: task.projectId,
-          data: {
-            entity: "ApprovalTask",
-            requestCode: task.requestCode,
-            title: task.title,
-            approverRole: session.user.role,
-            comment: comment || null,
-          },
-        },
-      });
-    }
-  } catch (err) {
-    console.error("AuditLog creation failed:", err);
-  }
+    return updated;
+  });
 
   revalidatePath("/approvals");
   return updated;

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="960" viewBox="0 0 240 960">
+  <title>Sidebar Background · PCC PMS</title>
+  <desc>Harmonized with Login Screen theme, softer and faded for optimal text legibility.</desc>
+  <defs>
+    <linearGradient id="sidebarBg" x1="0" y1="0" x2="240" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F5F8FD"/>
+      <stop offset="35%" stop-color="#FAFCFE"/>
+      <stop offset="65%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F2FAF6"/>
+    </linearGradient>
+    <pattern id="sidebarDots" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#79A3DD" fill-opacity="0.10"/>
+    </pattern>
+  </defs>
+
+  <!-- Base gradient (soft, luminous and clean) -->
+  <rect width="240" height="960" fill="url(#sidebarBg)"/>
+
+  <!-- Top-left soft blue circular aura (delicate whisper) -->
+  <circle cx="0" cy="0" r="180" fill="#DFECFF" opacity="0.38"/>
+  <circle cx="36" cy="10" r="125" fill="#D3E4FD" opacity="0.28"/>
+
+  <!-- Bottom soft mint/teal circular aura (delicate whisper) -->
+  <circle cx="215" cy="940" r="200" fill="#DDF7EE" opacity="0.38"/>
+  <circle cx="235" cy="970" r="130" fill="#D4F2E8" opacity="0.32"/>
+  <circle cx="35" cy="910" r="140" fill="#EAF2FF" opacity="0.22"/>
+
+  <!-- Top dot matrix pattern (subtle watermark) -->
+  <rect x="144" y="78" width="72" height="72" fill="url(#sidebarDots)"/>
+
+  <!-- Bottom dot matrix pattern (subtle watermark) -->
+  <rect x="18" y="770" width="72" height="72" fill="url(#sidebarDots)"/>
+
+  <!-- Subtle line accent -->
+  <line x1="160" y1="46" x2="200" y2="46" stroke="#7FA1D0" stroke-width="1.2" opacity="0.20"/>
+
+  <!-- Architectural blueprint line art (ultra delicate watermark: stroke 1.4, opacity 0.055) -->
+  <g fill="none" stroke="#6488B2" stroke-width="1.4" opacity="0.055" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Scaffolding/grid subtle accent in mid/upper area -->
+    <g transform="translate(24, 275) scale(0.48) translate(-1024, -373)">
+      <path d="M1024 740h362V373h-362ZM1064 740V373M1144 740V373M1224 740V373M1304 740V373M1024 454h376M1024 536h376M1024 618h376"/>
+    </g>
+    <!-- Scaled building structure in lower/mid area -->
+    <g transform="translate(18, 540) scale(0.60) translate(-40, -454)">
+      <path d="M40 712h342V510H40ZM96 712V546h232v166M40 580h342M40 650h342M61 488h282v22M80 454h244v34M101 454l40 34 40-34 40 34 40-34 40 34"/>
+    </g>
+  </g>
+</svg>

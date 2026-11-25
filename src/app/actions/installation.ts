@@ -1,5 +1,6 @@
 "use server";
 
+import { auditedMutation } from "@/lib/project-audit";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { NcrStatus } from "@prisma/client";
@@ -313,7 +314,8 @@ export async function submitQcInspectionDecisionAction(formData: {
     throw new Error("ไม่พบรายการตรวจ QC นี้");
   }
 
-  const updated = await prisma.qcInspection.update({
+  const updated = await auditedMutation({ projectId: inspection.projectId, action: "QC_DECIDED", entityId: inspection.id, data: { title: "พิจารณาผลตรวจ QC", reference: inspection.inspectionNo, before: { status: inspection.status }, after: formData } }, async tx => {
+  const updated = await tx.qcInspection.update({
     where: { inspectionNo: formData.inspectionNo },
     data: {
       status: formData.decision,
@@ -324,11 +326,11 @@ export async function submitQcInspectionDecisionAction(formData: {
 
   // If rejected or re-inspect, ensure NCR exists
   if (formData.decision === "REJECTED" || formData.decision === "RE_INSPECT") {
-    const existingNcr = await prisma.ncrRecord.findFirst({
+    const existingNcr = await tx.ncrRecord.findFirst({
       where: { referenceDoc: formData.inspectionNo },
     });
     if (!existingNcr) {
-      await prisma.ncrRecord.create({
+      await tx.ncrRecord.create({
         data: {
           code: `NCR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
           projectId: inspection.projectId,
@@ -344,6 +346,11 @@ export async function submitQcInspectionDecisionAction(formData: {
       });
     }
   }
+
+
+    return updated;
+
+  });
 
   revalidatePath("/installation");
   revalidatePath(`/installation/inspection/${formData.inspectionNo}`);
@@ -397,7 +404,8 @@ export async function submitNcrAction(data: {
     });
   }
 
-  const updated = await prisma.ncrRecord.update({
+  const updated = await auditedMutation({ projectId: ncr.projectId, action: "NCR_UPDATED", entityId: ncr.id, data: { title: "ดำเนินการข้อบกพร่อง NCR", reference: ncr.code, before: { status: ncr.status, correctiveAction: ncr.correctiveAction }, after: { ...data, status: newStatus } } }, async tx => {
+  const updated = await tx.ncrRecord.update({
     where: { code: data.code },
     data: {
       status: newStatus,
@@ -405,6 +413,11 @@ export async function submitNcrAction(data: {
       verificationNotes: data.verificationNotes || ncr.verificationNotes,
       history: updatedHistory,
     },
+  });
+
+
+    return updated;
+
   });
 
   revalidatePath("/installation");
@@ -426,7 +439,8 @@ export async function createDailyLogAction(data: {
   issues?: string;
   description?: string;
 }) {
-  const newLog = await prisma.dailyLog.create({
+  const newLog = await auditedMutation({ projectId: data.projectId, action: "DAILY_LOG_CREATED", data: { title: data.activity, ...data } }, async tx => {
+  return await tx.dailyLog.create({
     data: {
       projectId: data.projectId,
       packageId: data.packageId,
@@ -443,6 +457,8 @@ export async function createDailyLogAction(data: {
       status: "DRAFT",
       qcStatus: "NOT_VERIFIED",
     },
+  });
+
   });
 
   revalidatePath("/installation");
